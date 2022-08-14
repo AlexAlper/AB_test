@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>My Webpage</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+        <script type="text/javascript">
+            function cmd(){
+                var select = document.getElementById("selectAB");
+                var valueAB = select.options[select.selectedIndex].value;
+                var date_from = document.getElementById("date_from").value;
+                var date_before = document.getElementById("date_before").value;
+        
+                $.ajax({
+                    type: "POST",
+                    url: "http://127.0.0.1:9300/cmd",
+                    data: {"idAB": valueAB, "date_from": date_from, "date_before":date_before},  
+                    success: function (data) { 
+                        var returnedData = JSON.parse(data);
+                        console.log(returnedData)
+                        $("#result").html(returnedData.name)
+                  },
+                });                
+            }
+         </script>
+</head>
+<body>
+    <h1>Фильтры</h1>
+<select id = "selectAB">
+    {% for test in tests %}
+    <option>{{test}}</option>
+  {% endfor %}
+</select>
+<br>
+<br>
+<input type="date" id="date_from"/>
+<br>
+<br>
+<input type="date" id="date_before"/>
+<br>
+<br>
+<a href="#" onclick="return cmd();">Получить файл</a>
+<div id="result"></div>
+
+
+</body>
+</html>
