@@ -5,6 +5,8 @@ from func_get import get_info, get_tests
 import os
 from json import dumps
 from flask import request
+from flask_sqlalchemy import SQLAlchemy
+#pipienv
 
 app = Flask(__name__)
 
@@ -21,4 +23,4 @@ def cmd():
 
 if __name__ == '__main__':  
     app.debug = True
-    app.run(port=9300)
+    app.run(host="0.0.0.0", port=9300)
