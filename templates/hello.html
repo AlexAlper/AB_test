@@ -12,7 +12,7 @@
         
                 $.ajax({
                     type: "POST",
-                    url: "http://127.0.0.1:9300/cmd",
+                    url: "http://10.1.241.41:9300/cmd",
                     data: {"idAB": valueAB, "date_from": date_from, "date_before":date_before},  
                     success: function (data) { 
                         var returnedData = JSON.parse(data);

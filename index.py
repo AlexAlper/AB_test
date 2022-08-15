@@ -21,4 +21,4 @@ def cmd():
 
 if __name__ == '__main__':  
     app.debug = True
-    app.run(port=9300)
+    app.run(host="0.0.0.0", port=9300)
