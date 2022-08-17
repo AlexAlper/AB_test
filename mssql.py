@@ -17,7 +17,7 @@ class MsSQL:
         conn = kwargs.pop('params')
         self.host = conn.pop('host')
         self.__password = conn.pop('password')
-        self.__login = conn.pop('login')
+        self.__login = conn.pop('user')
         self.database = conn.pop('database')
 
         self.conn_ms = "DRIVER={ODBC Driver 17 for SQL Server};" \
@@ -32,7 +32,6 @@ class MsSQL:
         :return: DataFrame
         """
 
-        self.print_select(query)
         with pyodbc.connect(self.conn_ms) as cnxn:
             return pd.read_sql(query, cnxn)
 

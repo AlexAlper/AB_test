@@ -1,0 +1,1 @@
+SELECT * FROM vv03.[dbo].[ab_tests_plan] WHERE id_ab_test = {id_test};

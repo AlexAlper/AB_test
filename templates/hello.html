@@ -2,45 +2,41 @@
 <html lang="en">
 <head>
     <title>My Webpage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script lang="javascript" src="/static/xls.js"></script>
+    <script lang="javascript" src="/static/FileSaver.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.3/jquery.min.js"></script>
+    <script lang="javascript" src="/static/logic.js"></script>   
         <script type="text/javascript">
-            function cmd(){
-                var select = document.getElementById("selectAB");
-                var valueAB = select.options[select.selectedIndex].value;
-                var date_from = document.getElementById("date_from").value;
-                var date_before = document.getElementById("date_before").value;
         
-                $.ajax({
-                    type: "POST",
-                    url: "http://10.1.241.41:9300/cmd",
-                    data: {"idAB": valueAB, "date_from": date_from, "date_before":date_before},  
-                    success: function (data) { 
-                        var returnedData = JSON.parse(data);
-                        console.log(returnedData)
-                        $("#result").html(returnedData.name)
-                  },
-                });                
-            }
          </script>
 </head>
-<body>
+<body style="padding:10pt">
     <h1>Фильтры</h1>
-<select id = "selectAB">
+
+<ul class="nav nav-pills" style="padding-top: 25pt">
+
+<li class="nav-item" style="padding-right: 25pt">
+<select id = "selectAB" class="form-select"  style="width: 100pt">
     {% for test in tests %}
     <option>{{test}}</option>
   {% endfor %}
 </select>
-<br>
-<br>
-<input type="date" id="date_from"/>
-<br>
-<br>
-<input type="date" id="date_before"/>
-<br>
-<br>
-<a href="#" onclick="return cmd();">Получить файл</a>
-<div id="result"></div>
+</li>
 
+<li class="nav-item" style="padding-right: 25pt">
+<input type="date" id="date_from" class="form-control" style="width: 100pt"/>
+</li>
 
+<li class="nav-item" style="padding-right: 25pt">
+<input type="date" id="date_before" class="form-control"  style="width: 100pt"/>
+</li>
+
+<li class="nav-item" style="padding-right: 25pt">
+<a class="btn btn-primary" role="button" href="#" onclick="return cmd();">Получить файл</a>
+</li>
+</ul>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 </body>
 </html>

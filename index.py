@@ -4,15 +4,20 @@ from flask import render_template
 from func_get import get_info, get_tests
 import os
 from json import dumps
-from flask import request
+from flask import request, url_for
 from flask_sqlalchemy import SQLAlchemy
 #pipienv
 
 app = Flask(__name__)
 
+
+
 @app.route('/')
 def hello_world():
     tests = get_tests()
+    url_for('static', filename='logic.js')
+    url_for('static', filename='xls.js')
+    url_for('static', filename='FileSaver.min.js')
     return render_template('hello.html', tests = tests) 
 
 @app.route("/cmd", methods=['GET', 'POST'])
