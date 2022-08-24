@@ -6,7 +6,7 @@ import os
 from mssql import MsSQL
 from time import sleep
 import copy
-# from os.path import join, dirname, exists, getenv
+import json
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
@@ -66,58 +66,52 @@ def create_file(df: pd.DataFrame, file_name: str) -> str:
 
 
 if __name__ == '__main__':
-    sleep(2)
-    id_test=4
+    # sleep(2)
+    # id_test=4
 
-    test_number = os.path.join(f'{os.path.dirname(__file__)}/all_answers', '{id_test}_number.parquet')
-    if not os.path.exists(test_number) and os.path.getctime(all_tests) < datetime.now():
-        get_all_numbers_test(id_test=id_test)
+    # test_number = os.path.join(f'{os.path.dirname(__file__)}/all_answers', '{id_test}_number.parquet')
+    # if not os.path.exists(test_number) and os.path.getctime(all_tests) < datetime.now():
+    #     get_all_numbers_test(id_test=id_test)
 
-    exit(0)
+    # exit(0)
 
-    with open('query.sql') as f:
+    with open('queries/query.json') as f:
         text = f.read()
 
+    j_queries = json.loads(text)
+
     ms_c = {
-        'host': MS_HOST,
-        'password': MS_PASSWORD,
-        'user': MS_USER,
+        'host': MS_HOST_03,
+        'password': MS_PASSWORD_03,
+        'user': MS_USER_03,
         'database': 'master'
     }
 
-    sourсe = MsSQL(
-        params=ms_c
-    )
+    # sourсe = MsSQL(
+    #     params=ms_c
+    # )
 
     date_begin = datetime.now()
     date_end = datetime.now() + timedelta(days=1)
     number_list = ['asdasd', 'adqwdf', 'asdrebrt']
     number_list = "(''" + "'',''".join(number_list) + "'')"
-
-    query = """
-        exec vv03.dbo.AB_TestsGet;
-    """
-
-    query = query.format(year_1=date_begin.year, month_1=date_begin.month, day_1=date_begin.day, year_2=date_end.year, month_2=date_end.month, day_2=date_end.day)
-    df = sourсe.select_to_df(query)
-    sleep(1)
-    print(df)
-    exit(0)
     querys = text.split(';')
-    for i in range(1, len(querys[1:]), 2):
-        metric_name = querys[i].strip()
-        query_main = querys[i+1].strip()
-        query = ''
-        if  query_main != '':
-            print('\n', metric_name)
-            if metric_name.find('MS') > 0:
-                query = query.format(year_1=date_begin.year, month_1=date_begin.month, day_1=date_begin.day, year_2=date_end.year, month_2=date_end.month, day_2=date_end.day)
-            else:
-                query = QUERY_HEADER + query_main + QUERY_TAIL
-                query = query.format(date_1=date_begin.strftime('%Y-%m-%d'), date_2=date_end.strftime('%Y-%m-%d'), number_list=number_list)
-            try:
-                df = sourсe.select_to_df(query)
-                sleep(1)
-                print(df)
-            except Exception as err:
-                print(err)
+    for i in j_queries:
+        # metric_name = i['metrics']
+        query_main = i['query'].strip()
+        print(query_main)
+        # query = ''
+        # if  query_main != '':
+        #     print('\n', metric_name)
+        #     if metric_name.find('MS') > 0:
+        #         query = query.format(year_1=date_begin.year, month_1=date_begin.month, day_1=date_begin.day, year_2=date_end.year, month_2=date_end.month, day_2=date_end.day)
+        #     else:
+        #         query = QUERY_HEADER + query_main + QUERY_TAIL
+        #         query = query.format(date_1=date_begin.strftime('%Y-%m-%d'), date_2=date_end.strftime('%Y-%m-%d'), number_list=number_list)
+        #     try:
+        #         print(query)
+        #         # df = sourсe.select_to_df(query)
+        #         sleep(1)
+        #         print(df)
+        #     except Exception as err:
+        #         print(err)

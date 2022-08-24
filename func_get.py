@@ -6,15 +6,15 @@ import body
 
 def get_tests():
     file_tests = os.path.join(f'{os.path.dirname(__file__)}/all_answers', 'all_tests.json')
-    if not os.path.exists(file_tests) and os.path.getctime(file_tests) < datetime.now():
+    if not os.path.exists(file_tests) and os.path.getctime(file_tests) > datetime.now() - timedelta(days=1):
         body.get_all_tests()
 
     with open(file_tests) as f:
         all_tests = json.load(f)
-        
+
     return all_tests
 
-def get_info(name, date_from, date_before):
+def get_info(id_test, date_begin, date_end):
     answer = json.dumps(
         { 'metrix': 
     [
