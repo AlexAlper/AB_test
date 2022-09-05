@@ -125,7 +125,7 @@ def get_metrics(id_test, test_file, days_):
 
     for number_list, test_type in numbers_list:
         if number_list:
-            for number, i in enumerate([q for q in j_queries if len(q['querys']) == 1][4:5]):
+            for number, i in enumerate([q for q in j_queries if len(q['querys']) == 1][:4]):
                 answer = 0
                 metric = i['metrics'][0]
                 query_main_list = i['querys']
@@ -153,7 +153,7 @@ def get_metrics(id_test, test_file, days_):
                                             number_list=str(tuple(page_query)).replace(",)",")")
                                         )
 
-                                    print(query)
+                                    # print(query)
 
                                     if df_new.empty:
                                         df_new = sourсe_06.select_to_df(query)
@@ -184,22 +184,26 @@ def get_metrics(id_test, test_file, days_):
                                         if not df_c.empty:
                                             df_new = pd.concat([df_new,df_c])
 
-                        if not df_new.empty:
-                            if type_q == 'unique':  
-                                df_new = df_new.drop_duplicates()
-                                answer = float(len(df_new))
-                            elif type_q == 'avg':
-                                df_new = df_new.astype('int')
-                                answer = float(df_new['value'].mean())
-                            elif type_q == 'count':  
-                                df_new = df_new.astype('int')
-                                answer = float(df_new['value'].sum())
+                        # if not df_new.empty:
+                        #     if type_q == 'unique':  
+                        #         df_new = df_new.drop_duplicates()
+                        #         answer = float(len(df_new))
+                        #     elif type_q == 'avg':
+                        #         df_new = df_new.fillna('0').astype('int')
+                        #         answer = float(df_new['value'].mean())
+                        #     elif type_q == 'count' or type_q == 'sum':  
+                        #         df_new = df_new.fillna('0').astype('int')
+                        #         answer = float(df_new['value'].sum())
 
-                        df_new = pd.DataFrame([round(answer, 2)], columns=[f'type_{test_type}'], index=[metric])
-                        df_new['date'] = date_from
-                        df_new.to_parquet(file_tests)
-                        print(df_new)
-                        os.chmod(file_tests, 0o777)
+                        # df_new = pd.DataFrame([round(answer, 2)], columns=[f'type_{test_type}'], index=[metric])
+                        
+                        if not df_new.empty:
+                            df_new['date'] = date_from
+                            df_new['metric'] = metric
+                            df_new['type_q'] = type_q
+                            df_new.set_index(['metric'])
+                            df_new.to_parquet(file_tests)
+                            os.chmod(file_tests, 0o777)
 
 
 
@@ -260,30 +264,30 @@ def get_metrics_all(days_):
                             if not df_c.empty:
                                 df_new = pd.concat([df_new,df_c])
 
-                if not df_new.empty:
-                    if type_q == 'unique':  
-                        df_new = df_new.drop_duplicates()
-                        answer = float(len(df_new))
-                    elif type_q == 'avg':
-                        df_new = df_new.astype('int')
-                        answer = float(df_new['value'].mean())
-                    elif type_q == 'count' or type_q == 'sum':  
-                        df_new = df_new.astype('int')
-                        answer = float(df_new['value'].sum())
+                # if not df_new.empty:
+                #     if type_q == 'unique':  
+                #         df_new = df_new.drop_duplicates()
+                #         answer = float(len(df_new))
+                #     elif type_q == 'avg':
+                #         df_new = df_new.astype('int')
+                #         answer = float(df_new['value'].mean())
+                #     elif type_q == 'count' or type_q == 'sum':  
+                #         df_new = df_new.astype('int')
+                #         answer = float(df_new['value'].sum())
                             
-                df_new = pd.DataFrame(
-                    {
-                        'value': [round(answer, 2)],
-                        'index': [metric],
-                        'date': [date_from]
-                    }
-                )
-
-                df_new.set_index(['date', 'index'], inplace=True)
+                # df_new = pd.DataFrame(
+                #     {
+                #         'value': [round(answer, 2)],
+                #         'index': [metric],
+                #         'date': [date_from]
+                #     }
+                # )
                 
                 if not df_new.empty:
+                    df_new['metric'] = metric
+                    df_new['type_q'] = type_q
+                    df_new.set_index(['date', 'index'], inplace=True)
                     df_new.to_parquet(file_tests)
-                    print(df_new)
                     os.chmod(file_tests, 0o777)
 
 

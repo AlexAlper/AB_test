@@ -71,19 +71,41 @@ def get_info(id_test, date_begin, date_end):
     for date_from, date_to in days_:
         files = glob.glob(f"{os.path.dirname(__file__)}/all_answers/{id_test}/{date_from.strftime('%Y%m%d')}_{date_to.strftime('%Y%m%d')}*.parquet")
         for file in files:    
-            df_full = pd.concat([df_full,pd.read_parquet(file)])
+            df_new = pd.read_parquet(file)
+            df_full = pd.concat([df_full,df_new])
 
 
-    df_full = df_full.groupby(level = df_full.index.names).sum()
-    df_full = df_full.reset_index()
-    df_full.rename(
-        columns={
-            'index': 'metrics'
-        },
-        inplace=True
-    )
+    if not df_full.empty:
+        df_full.set_index(['metric'], inplace=True)
+        print(df_full)
+        df_full_unique = df_full.loc[df_full.type_q == 'unique']
+        print(df_full_unique)
+        # type_q = df_new['type_q'].unique()[0]
+        # if type_q == 'unique':  
+        #     df_new = df_new.drop_duplicates()
+        #     df_new = df_new.count()
+        # elif type_q == 'avg':
+        #     df_new = df_new.fillna('0').astype('int')
+        #     df_new = df_new['value'].mean()
+        # elif type_q == 'count' or type_q == 'sum':  
+        #     df_new = df_new.fillna('0').astype('int')
+        #     answer = float(df_new['value'].sum())
 
-    return df_full.to_json(orient='records', date_format='iso', date_unit = 's')
+
+    # df_full = df_full.groupby(level = df_full.index.names).sum()
+    # df_full = df_full.reset_index()
+    # df_full.rename(
+    #     columns={
+    #         'index': 'metrics'
+    #     },
+    #     inplace=True
+    # )
+
+    # print(df_full)
+    # df_full['date'] = df_full['date'].astype('object')
+    # print(df_full)
+
+    # return df_full.to_json(orient='records')
 
     
 
