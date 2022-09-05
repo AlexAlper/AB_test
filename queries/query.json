@@ -29,7 +29,7 @@
     "source": "MS",
     "type_q": "sum",
     "querys": [
-        "SELECT sum(Order_line.base_sum) as value FROM Loyalty03..Orders_header as Orders_header INNER JOIN Loyalty03..Order_line AS Order_line ON Order_line.id_order = Orders_header.id_order WHERE Orders_header.date_order between '{date_1}' and '{date_2}' AND source IN (2, 3, 4, 5) AND id_status in (5, 9, 18) AND order_type in (2, 4) AND number in {number_list}"
+        "SELECT sum(Order_line.base_sum) as value FROM Loyalty03..Orders_header as Orders_header (NOLOCK) INNER JOIN Loyalty03..Order_line AS Order_line (NOLOCK) ON Order_line.id_order = Orders_header.id_order WHERE Orders_header.date_order between '{date_1}' and '{date_2}' AND source IN (2, 3, 4, 5) AND id_status in (5, 9, 18) AND order_type in (2, 4) AND number in {number_list}"
     ]},
     {"metrics": [
         "Маржа добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
@@ -76,17 +76,23 @@
     "type_q": "count",
     "querys": ["SELECT COUNT(id_tov) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''"]},
     {"metrics": [
-        "MS Выручка товаров добавленных из поиска (не пустого)"
+        "Выручка товаров добавленных из поиска (не пустого)"
     ],
-    "source": "MS",
-    "type_q": "",
-    "querys": [""]},
+    "source": "CH/MS",
+    "type_q": "select/sum",
+    "querys": [
+        "SELECT id_cart, id_tov FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''",
+        "SELECT sum(Order_line.base_sum) as value FROM Loyalty03..Orders_header as Orders_header INNER JOIN Loyalty03..Order_line AS Order_line ON Order_line.id_order = Orders_header.id_order AND Order_line.id_tov in {id_tov} WHERE Orders_header.date_order between '{date_1}' and '{date_2}' AND source IN (2, 3, 4, 5) AND id_status in (5, 9, 18) AND order_type in (2, 4) AND Orders_header.id_cart in {id_cart}"
+    ]},
     {"metrics": [
-        "MS Маржа товаров добавленных из поиска (не пустого)"
+        "Маржа товаров добавленных из поиска (не пустого)"
     ],
-    "source": "MS",
-    "type_q": "",
-    "querys": [""]},
+    "source": "CH/MS",
+    "type_q": "select/sum",
+    "querys": [
+        "SELECT id_cart, id_tov FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''",
+        "SELECT sum(Order_line.base_sum - Order_line.quantity * Sebest_tov_tbl.Sebestoimost_nds) as value FROM Loyalty03..Orders_header as Orders_header (NOLOCK) INNER JOIN Loyalty03..Order_line AS Order_line (NOLOCK) ON Order_line.id_order = Orders_header.id_order AND Order_line.id_tov in {id_tov} INNER JOIN NSI..Sebest_tov_tbl AS Sebest_tov_tbl (NOLOCK) ON Sebest_tov_tbl.Tovar_Id = Order_line.id_tov AND CAST(Sebest_tov_tbl._Period AS date) = CAST(FORMAT(Orders_header.date_order, 'yyyy-MM-01') AS date) WHERE Orders_header.date_order between '{date_1}' and '{date_2}' AND source IN (2, 3, 4, 5) AND id_status in (5, 9, 18) AND order_type in (2, 4) AND Orders_header.id_cart in {id_cart}"
+    ]},
     {"metrics": [
         "Количество выдач пустого поиска (рекомендации в пустом поиске)"
     ],
