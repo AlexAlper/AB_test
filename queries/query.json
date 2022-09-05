@@ -2,107 +2,191 @@
     {"metrics": [
         "Количество клиентов, посещавших МП"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT number) AS number,\n        FROM raw.logs_tbl\n        WHERE date_add between ''{date_1}'' and ''{date_2}'';\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (number) AS value FROM logs.full_add_cart WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list}"]},
     {"metrics": [
-        "MS Количество клиентов, оформивших заказ"
+        "Количество клиентов, оформивших заказ"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT number) as number\n        FROM Loyalty03..Orders_header WITH (NOLOCK)\n        WHERE date_order between DATEFROMPARTS({year_1}, {month_1}, {day_1}) and DATEFROMPARTS({year_2}, {month_2}, {day_2})\n            AND source IN (2, 3, 4, 5)\n            AND id_status in (5, 9, 18)\n            AND order_type in (2, 4);\n    "},
+    "source": "MS",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (number) as value FROM Loyalty03..Orders_header WITH (NOLOCK) WHERE date_order between '{date_1}' and '{date_2}' AND number in {number_list} AND source IN (2, 3, 4, 5) AND id_status in (5, 9, 18) AND order_type in (2, 4)"]},
     {"metrics": [
         "Количество уникальных корзин за период"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT id_cart) as id_cart\n        FROM raw.logs_tbl\n        WHERE date_add between ''{date_1}'' and ''{date_2}'';\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (id_cart) as value FROM logs.full_add_cart WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list}"]},
     {"metrics": [
         "Количество добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT id_tov) as id_tov\n        FROM raw.logs_tbl\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND isNotNull(id_tov)\n            AND id_element IN (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            );\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (id_tov) as value FROM logs.full_add_cart WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND isNotNull(id_tov) AND id_element IN ( 'add', 'plus', 'minus', 'edit')"]},
     {"metrics": [
-        "MS Выручка добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
+        "Выручка добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
     ],
-    "query": "\n        ms нужны заказы\n    "},
+    "source": "MS",
+    "type_q": "sum",
+    "querys": [
+        "SELECT sum(Order_line.base_sum) as value FROM Loyalty03..Orders_header as Orders_header INNER JOIN Loyalty03..Order_line AS Order_line ON Order_line.id_order = Orders_header.id_order WHERE Orders_header.date_order between '{date_1}' and '{date_2}' AND source IN (2, 3, 4, 5) AND id_status in (5, 9, 18) AND order_type in (2, 4) AND number in {number_list}"
+    ]},
     {"metrics": [
-        "MS Маржа добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
+        "Маржа добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
     ],
-    "query": "\n        ms нужны заказы\n    "},
+    "source": "MS",
+    "type_q": "sum",
+    "querys": [
+        "SELECT sum(Order_line.base_sum - Order_line.quantity * Sebest_tov_tbl.Sebestoimost_nds) as value FROM Loyalty03..Orders_header as Orders_header (NOLOCK) INNER JOIN Loyalty03..Order_line AS Order_line (NOLOCK) ON Order_line.id_order = Orders_header.id_order INNER JOIN NSI..Sebest_tov_tbl AS Sebest_tov_tbl (NOLOCK) ON Sebest_tov_tbl.Tovar_Id = Order_line.id_tov AND CAST(Sebest_tov_tbl._Period AS date) = CAST(FORMAT(Orders_header.date_order, 'yyyy-MM-01') AS date) WHERE Orders_header.date_order between '{date_1}' and '{date_2}' AND source IN (2, 3, 4, 5) AND id_status in (5, 9, 18) AND order_type in (2, 4) AND number in {number_list}"
+    ]},
     {"metrics": [
         "Количество клиентов, заходивших в поиск"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT number)   as number\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list};\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (number) as value  FROM (SELECT number   as number  FROM logs.tovs_search  WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list})"]},
     {"metrics": [
         "Количество клиентов, добавлявших товары из непустого поиска"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT number)    as number\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND search_bar != ''\n            AND id_element IN (\n                                ''add'',\n                                ''plus'',\n                                ''minus'',\n                                ''edit''\n            );\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (number) as value  FROM (SELECT number   as number  FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND search_bar != '' AND id_element IN ( 'add', 'plus', 'minus', 'edit'))"]},
     {"metrics": [
         "Количество уникальных выдач (не пустых)"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT id_search) as id_search\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND search_bar != '';\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND search_bar != ''"]},
     {"metrics": [
         "Количество разных запросов"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT search_bar) as search_bar\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list};\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list}"]},
     {"metrics": [
         "Количество уникальных выдач с добавлением (не пустых)"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT id_search) as id_search\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            )\n            AND search_bar != '';\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''"]},
     {"metrics": [
         "Количество товаров добавленных из поиска (не пустого)"
     ],
-    "query": "\n        SELECT COUNT(id_tov) as id_tov\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            )\n            AND search_bar != '';\n    "},
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(id_tov) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''"]},
     {"metrics": [
         "MS Выручка товаров добавленных из поиска (не пустого)"
     ],
-    "query": "\n        ms нужны заказы\n    "},
+    "source": "MS",
+    "type_q": "",
+    "querys": [""]},
     {"metrics": [
         "MS Маржа товаров добавленных из поиска (не пустого)"
     ],
-    "query": "\n        ms нужны заказы\n    "},
+    "source": "MS",
+    "type_q": "",
+    "querys": [""]},
     {"metrics": [
         "Количество выдач пустого поиска (рекомендации в пустом поиске)"
     ],
-    "query": "\n        SELECT COUNT(id_search) as id_search\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND search_bar = ''\n            AND id_element in ('start', 'restart');\n    "},
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND search_bar = '' AND id_element in ('start', 'restart')"]},
     {"metrics": [
         "Количество выдач пустого поиска (рекомендации в пустом поиске) с добавлением"
     ],
-    "query": "\n        SELECT COUNT(id_search) as id_search\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND search_bar = ''\n            AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            );\n    "},
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND search_bar = '' AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
     {"metrics": [
         "Количество товаров, добавленных из пустого поиска"
     ],
-    "query": "\n        SELECT COUNT(id_tov) as id_tov\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            )\n            AND search_bar = '';\n    "},
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(id_tov) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar = ''"]},
     {"metrics": [
         "Количество разных запросов без добавления (ни одного добавления за период)"
     ],
-    "query": "\n        WITH ss as (SELECT COUNT(DISTINCT search_bar) as sss\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list})SELECT (select sss from ss) - COUNT(DISTINCT search_bar) as search_bar\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            );\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["WITH ss as (SELECT uniqExact(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list})SELECT (select sss from ss) - uniqExact(search_bar) as search_bar FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
     {"metrics": [
-        "Количество выдач 'ичего не найдено'",
+        "Количество выдач 'Ничего не найдено'"
+    ],
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('restart') AND rn_max = 0"]},
+    {"metrics": [
         "Количество запросов 'Ничего не найдено'"
     ],
-    "query": "\n        SELECT COUNT(id_search)  as id_search,\n            COUNT(search_bar) as search_bar\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND id_element in ('restart')\n            AND rn_max = 0;\n    "},
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('restart') AND rn_max = 0"]},
     {"metrics": [
         "Количество выдач с интересом: любое действие: добавление, просмотр карточки товара, привозите больше, избранное, списки"
     ],
-    "query": "\n        SELECT source,\n            id_element,\n            COUNT(id_search) as id_search\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            );\n    "},
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
     {"metrics": [
-        "Средняя позиция добавления",
-        "Количество запросов со средней позицией добавления более 6",
-        "Количество запросов со средней позицией добавления более 12",
+        "Средняя позиция добавления"
+    ],
+    "source": "",
+    "type_q": "avg",
+    "querys": ["SELECT position as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 0 AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
+    {"metrics": [
+        "Количество запросов со средней позицией добавления более 6"
+    ],
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 6 AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
+    {"metrics": [
+        "Количество запросов со средней позицией добавления более 12"
+    ],
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 12 AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
+    {"metrics": [
         "Количество запросов со средней позицией добавления более 40"
     ],
-    "query": "\n        SELECT COUNT(search_bar)                            as search_bar,\n            avg(toUInt16OrNull(action))                  as actions,\n            sum(if(toUInt16OrNull(action) > 6, 1, 0))    as s_b_6,\n            sum(if(toUInt16OrNull(action) > 12, 1, 0))   as s_b_12,\n            sum(if(toUInt16OrNull(action) > 40, 1, 0))   as s_b_40\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND toUInt16OrNull(action) > 0\n            AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            );\n    "},
+    "source": "",
+    "type_q": "count",
+    "querys": ["SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 40 AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
     {"metrics": [
-        "Количество уникальных выдач с позицией добавления более 6",
-        "Количество уникальных выдач с позицией добавления более 12",
+        "Количество уникальных выдач с позицией добавления более 6"
+    ],
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 6 AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
+    {"metrics": [
+        "Количество уникальных выдач с позицией добавления более 12"
+    ],
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 12 AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
+    {"metrics": [
         "Количество уникальных выдач с позицией добавления более 40"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT id_search)                    as id_search,\n            avg(toUInt16OrNull(action))                  as actions,\n            sum(if(toUInt16OrNull(action) > 6, 1, 0))    as a_6,\n            sum(if(toUInt16OrNull(action) > 12, 1, 0))   as a_12,\n            sum(if(toUInt16OrNull(action) > 40, 1, 0))   as a_40\n        FROM default.v_tovs_search_\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n        AND toUInt16OrNull(action) > 0\n        AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            );\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 40 AND id_element in ( 'add', 'plus', 'minus', 'edit')"]},
     {"metrics": [
         "Среднее время от запроса до добавления"
     ],
-    "query": "\n        SELECT min(date_add) as min_d\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND sipHash64(number, id_search) in (SELECT sipHash64(number, id_search)\n                                            FROM default.v_tovs_search_new\n                                            WHERE date_add > '2022-08-01'\n                                                AND id_element in (\n                                                                    ''add'',\n                                                                    ''plus'',\n                                                                    ''minus'',\n                                                                    ''edit''\n                                                ))\n        GROUP BY id_search\n        LIMIT 100;\n\n        SELECT min(date_add) as action_d\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND sipHash64(number, id_search) in (SELECT sipHash64(number, id_search)\n                                            FROM default.v_tovs_search_new\n                                            WHERE date_add between ''{date_1}'' and ''{date_2}''\n                                                    AND number in {number_list}\n                                                    AND id_element in (\n                                                                    ''add'',\n                                                                    ''plus'',\n                                                                    ''minus'',\n                                                                    ''edit''\n                                                ))\n        GROUP BY number, id_search, id_tov\n        ORDER BY id_search, id_tov\n        LIMIT 100;\n    "},
+    "source": "",
+    "type_q": "avg",
+    "querys": ["WITH min_search AS (SELECT min(date_add) as min_d,  id_search as id_search FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'plus', 'minus', 'edit') GROUP BY id_search), min_add as (SELECT min(date_add) as min_d, id_search as id_search FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'plus', 'minus', 'edit') GROUP BY id_search, id_tov) SELECT date_diff('second', min_search.min_d, min_add.min_d) as value FROM min_search INNER JOIN min_add USING(id_search)"]},
     {"metrics": [
         "Количество поисковых сессий (Уточнение запроса или исправления ошибки - единая поисковая сессия)"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT number, id_search) as all_searches\n        FROM default.v_tovs_search_new;\n    "},
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT number, id_search FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} GROUP BY number, id_search"]},
     {"metrics": [
-        "Количество сессий без добавления, 30 - 31 используется id_search так как необходимо дологирование очистки поисковой строки."
+        "Количество сессий без добавления"
     ],
-    "query": "\n        SELECT COUNT(DISTINCT number, id_search) as all_searches\n        FROM default.v_tovs_search_new\n        WHERE date_add between ''{date_1}'' and ''{date_2}''\n            AND number in {number_list}\n            AND id_element in (\n                            ''add'',\n                            ''plus'',\n                            ''minus'',\n                            ''edit''\n            );\n    "}
+    "source": "",
+    "type_q": "unique",
+    "querys": ["SELECT number, id_search as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') GROUP BY number, id_search"]}
 ]

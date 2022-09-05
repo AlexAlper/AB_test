@@ -1,5 +1,16 @@
 [
     {
+        "id_ab_test":43,
+        "date1":1660608000000,
+        "date2":4090521600000,
+        "Descr_ab_test":"A\\B \u0442\u0435\u0441\u0442 \u0434\u043b\u044f \u0440\u0430\u0441\u043a\u0430\u0442\u043a\u0438 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430 \u043d\u0430 \u043d\u043e\u0432\u043e\u043c \u0441\u0435\u0440\u0432\u0435\u0440\u0435",
+        "id_object":"3 \u043a\u0430\u0442\u0430\u043b\u043e\u0433 \u043d\u0430 \u043c\u043f01                                                                                   ",
+        "default_type_test":"A",
+        "type_test_final":"A",
+        "id_type":1,
+        "fl_save":false
+    },
+    {
         "id_ab_test":10,
         "date1":1602806400000,
         "date2":1603670400000,
@@ -19,6 +30,28 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
+        "fl_save":false
+    },
+    {
+        "id_ab_test":49,
+        "date1":1657584000000,
+        "date2":1657843200000,
+        "Descr_ab_test":"\u0411\u0443\u0441\u0442\u0438\u043d\u0433 \u043f\u043e\u0438\u0441\u043a\u0430",
+        "id_object":"boosting                                                                                            ",
+        "default_type_test":"B",
+        "type_test_final":"B",
+        "id_type":1,
+        "fl_save":false
+    },
+    {
+        "id_ab_test":44,
+        "date1":1660608000000,
+        "date2":4090521600000,
+        "Descr_ab_test":"A\\B \u0442\u0435\u0441\u0442 \u0434\u043b\u044f \u0440\u0430\u0441\u043a\u0430\u0442\u043a\u0438 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430 \u043d\u0430 \u043d\u043e\u0432\u043e\u043c \u0441\u0435\u0440\u0432\u0435\u0440\u0435",
+        "id_object":"Catalog v4                                                                                          ",
+        "default_type_test":"A",
+        "type_test_final":"A",
+        "id_type":2,
         "fl_save":false
     },
     {
@@ -68,7 +101,7 @@
     {
         "id_ab_test":38,
         "date1":1657584000000,
-        "date2":1660521600000,
+        "date2":4099766400000,
         "Descr_ab_test":"\u041d\u043e\u0432\u0430\u044f \u043b\u043e\u0433\u0438\u043a\u0430 \u043f\u0440\u043e\u0446\u0435\u0434\u0443\u0440\u044b \u043f\u043e\u0438\u0441\u043a\u0430 \u0434\u043b\u044f \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432 \u0438\u0437 \u0434\u0432\u0443\u0445 \u0441\u043b\u043e\u0432",
         "id_object":"Loyalty..Product_Search4                                                                            ",
         "default_type_test":"A",
@@ -215,6 +248,17 @@
         "Descr_ab_test":"\u041f\u0435\u0440\u0435\u0432\u043e\u0434 \u043a\u043e\u0440\u0437\u0438\u043d\u044b \u043d\u0430 \u043d\u043e\u0432\u044b\u0439 \u0441\u0435\u0440\u0432\u0435\u0440",
         "id_object":"Loyalty.dbo.MP_Get_ab_test_v2                                                                       ",
         "default_type_test":"A",
+        "type_test_final":"A",
+        "id_type":1,
+        "fl_save":false
+    },
+    {
+        "id_ab_test":46,
+        "date1":1660867200000,
+        "date2":1724025600000,
+        "Descr_ab_test":"\u0411\u0430\u043d\u043d\u0435\u0440\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430 - \u043d\u043e\u0432\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f",
+        "id_object":"Loyalty.dbo.MP_Get_ab_test_v2                                                                       ",
+        "default_type_test":"A",
         "type_test_final":"B",
         "id_type":1,
         "fl_save":false
@@ -253,6 +297,17 @@
         "fl_save":false
     },
     {
+        "id_ab_test":42,
+        "date1":1660521600000,
+        "date2":1661126400000,
+        "Descr_ab_test":"\u0420\u0430\u0441\u043a\u0430\u0442\u043a\u0430 \u043f\u0440\u043e\u0446\u0435\u0434\u0443\u0440 \u0441 \u043f\u043e\u043b\u0435\u043c\u043c id_client_status",
+        "id_object":"Loyalty.dbo.Takeaway_GetOrder                                                                       ",
+        "default_type_test":"A",
+        "type_test_final":"B",
+        "id_type":2,
+        "fl_save":false
+    },
+    {
         "id_ab_test":21,
         "date1":1642636800000,
         "date2":1719705600000,
@@ -260,6 +315,17 @@
         "id_object":"Loyalty.dbo.Takeaway_GetOrderStatusMain                                                             ",
         "default_type_test":"A",
         "type_test_final":"A",
+        "id_type":1,
+        "fl_save":false
+    },
+    {
+        "id_ab_test":45,
+        "date1":1660521600000,
+        "date2":1661126400000,
+        "Descr_ab_test":"\u0440\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0430\u0446\u0438\u0438",
+        "id_object":"MP_Products_Recommendations                                                                         ",
+        "default_type_test":"A",
+        "type_test_final":"B",
         "id_type":1,
         "fl_save":false
     },
@@ -342,8 +408,8 @@
     },
     {
         "id_ab_test":29,
-        "date1":1648771200000,
-        "date2":1656547200000,
+        "date1":1661817600000,
+        "date2":1661904000000,
         "Descr_ab_test":"\u0413\u0438\u0431\u043a\u0438\u0439 \u044d\u043a\u0440\u0430\u043d\u0430 \u041c\u043e\u044f \u043a\u0430\u0440\u0442\u0430",
         "id_object":"vv03.dbo.MP_GetWidget_Rule                                                                          ",
         "default_type_test":"A",

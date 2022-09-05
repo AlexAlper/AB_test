@@ -10,6 +10,10 @@ function cmd(){
         success: function (data) { 
             var returnedData = JSON.parse(data);
 
+            if (returnedData.error == 1) {
+                $("#result").html(returnedData.name)
+                return
+            }
             
             var wb = XLSX.utils.book_new();
             wb.Props = {
@@ -17,20 +21,25 @@ function cmd(){
                     Subject: "ab-test",
             };
             
-            wb.SheetNames.push("Metrix");
-            var ws_data = [['Название метрики' , 'Тестовая группа', 'Контрольная группа']];
+            //wb.SheetNames.push("Metrix");
+            //wb.SheetNames.push("Топ запросов");
+            //var ws_data = [['Название метрики' , 'Тестовая группа', 'Контрольная группа']];
 
-            metrix = JSON.parse(returnedData.name).metrix
+            console.log(returnedData)
+            metrix = JSON.parse(returnedData.name)
+            console.log(metrix)
+            const worksheet = XLSX.utils.json_to_sheet(metrix);
+            
+            XLSX.utils.book_append_sheet(wb, worksheet, "Dates");
 
+            //for (i = 0; i < metrix.length; i++){
+            //    var data = metrix[i]
+            //   arr = [data['metrics'], data['type_A'], data['type_B']]
+             //   ws_data.push(arr)
+            //}
 
-            for (i = 0; i < metrix.length; i++){
-                var data = metrix[i]
-                arr = [data['name'], data['test_group'], data['control_group']]
-                ws_data.push(arr)
-            }
-
-            var ws = XLSX.utils.aoa_to_sheet(ws_data);
-            wb.Sheets["Metrix"] = ws;
+            //var ws = XLSX.utils.aoa_to_sheet(ws_data);
+           //wb.Sheets["Metrix"] = ws;
         
             var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
             function s2ab(s) {
@@ -43,12 +52,85 @@ function cmd(){
             }
             
             saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'ab-test.xlsx');
-            
-
-
-            $("#result").html(returnedData.name)
+        
       },
     });                
+}
+
+
+function top_request(){
+    console.log('test')
+}
+
+function all_number(){
+    console.log('test')
+   
+    var date_from = document.getElementById("date_from").value;
+    var date_before = document.getElementById("date_before").value;
+
+    $.ajax({
+        type: "POST",
+        url: "http://10.1.241.41:9300/all_number",
+        data: {"date_from": date_from, "date_before":date_before},  
+        success: function (data) { 
+            var returnedData = JSON.parse(data);
+
+            if (returnedData.error == 1) {
+                $("#result").html(returnedData.name)
+                return
+            }
+            
+            var wb = XLSX.utils.book_new();
+            wb.Props = {
+                    Title: "AB tests",
+                    Subject: "ab-test",
+            };
+            
+            //wb.SheetNames.push("Metrix");
+
+            //var ws_data = [['Название метрики' , 'Тестовая группа', 'Контрольная группа']];
+
+            console.log(returnedData)
+            console.log(0)
+            metrix = JSON.parse(returnedData.name)
+            console.log(1)
+            console.log(metrix)
+            const worksheet = XLSX.utils.json_to_sheet(metrix);
+
+            
+            XLSX.utils.book_append_sheet(wb, worksheet, "Dates");
+             
+            //date = metrix[0].date
+
+            /*for (i = 0; i < metrix.length; i++){
+                if (date == metrix[i].date) {
+
+                } else {
+                    date = metrix[i].date
+                }
+                var data = metrix[i]
+                arr = [data['metrics'], data['type_A'], data['type_B']]
+                ws_data.push(arr)
+            }
+
+            var ws = XLSX.utils.aoa_to_sheet(ws_data);
+            wb.Sheets["Metrix"] = ws;
+        */
+            var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+            function s2ab(s) {
+        
+                    var buf = new ArrayBuffer(s.length);
+                    var view = new Uint8Array(buf);
+                    for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                    return buf;
+                    
+            }
+            
+            saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'ab-test.xlsx');
+        
+      },
+    });  
+
 }
 
 /*
