@@ -8,7 +8,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":10,
@@ -19,7 +21,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":14,
@@ -30,7 +34,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":49,
@@ -41,7 +47,9 @@
         "default_type_test":"B",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":44,
@@ -52,7 +60,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":2,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":9,
@@ -63,7 +73,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":8,
@@ -74,7 +86,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":12,
@@ -85,7 +99,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":5,
@@ -96,7 +112,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":38,
@@ -107,7 +125,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":4,
@@ -118,7 +138,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":6,
@@ -129,7 +151,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":11,
@@ -140,7 +164,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":15,
@@ -151,7 +177,9 @@
         "default_type_test":"B",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":18,
@@ -162,7 +190,9 @@
         "default_type_test":"B",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":32,
@@ -173,7 +203,9 @@
         "default_type_test":"B",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":33,
@@ -184,7 +216,9 @@
         "default_type_test":"B",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":34,
@@ -195,7 +229,9 @@
         "default_type_test":"B",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":35,
@@ -206,7 +242,9 @@
         "default_type_test":"A",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":36,
@@ -217,7 +255,9 @@
         "default_type_test":"A",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":17,
@@ -228,7 +268,9 @@
         "default_type_test":"B",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":37,
@@ -239,7 +281,9 @@
         "default_type_test":"A",
         "type_test_final":"B",
         "id_type":2,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":39,
@@ -248,9 +292,11 @@
         "Descr_ab_test":"\u041f\u0435\u0440\u0435\u0432\u043e\u0434 \u043a\u043e\u0440\u0437\u0438\u043d\u044b \u043d\u0430 \u043d\u043e\u0432\u044b\u0439 \u0441\u0435\u0440\u0432\u0435\u0440",
         "id_object":"Loyalty.dbo.MP_Get_ab_test_v2                                                                       ",
         "default_type_test":"A",
-        "type_test_final":"A",
+        "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":46,
@@ -261,7 +307,9 @@
         "default_type_test":"A",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":30,
@@ -272,7 +320,9 @@
         "default_type_test":"A",
         "type_test_final":null,
         "id_type":2,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":25,
@@ -283,7 +333,9 @@
         "default_type_test":"A",
         "type_test_final":null,
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":40,
@@ -294,7 +346,9 @@
         "default_type_test":"A",
         "type_test_final":null,
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":42,
@@ -305,7 +359,9 @@
         "default_type_test":"A",
         "type_test_final":"B",
         "id_type":2,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":21,
@@ -316,7 +372,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":45,
@@ -327,7 +385,9 @@
         "default_type_test":"A",
         "type_test_final":"B",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":27,
@@ -338,7 +398,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":20,
@@ -349,7 +411,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":19,
@@ -360,7 +424,9 @@
         "default_type_test":"A",
         "type_test_final":null,
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":28,
@@ -371,7 +437,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":26,
@@ -382,7 +450,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":24,
@@ -393,7 +463,9 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":23,
@@ -404,17 +476,21 @@
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     },
     {
         "id_ab_test":29,
-        "date1":1661817600000,
-        "date2":1661904000000,
+        "date1":1662249600000,
+        "date2":1662249600000,
         "Descr_ab_test":"\u0413\u0438\u0431\u043a\u0438\u0439 \u044d\u043a\u0440\u0430\u043d\u0430 \u041c\u043e\u044f \u043a\u0430\u0440\u0442\u0430",
         "id_object":"vv03.dbo.MP_GetWidget_Rule                                                                          ",
         "default_type_test":"A",
         "type_test_final":"A",
         "id_type":1,
-        "fl_save":false
+        "fl_save":false,
+        "owner":null,
+        "expected_result":null
     }
 ]

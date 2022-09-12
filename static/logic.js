@@ -92,12 +92,37 @@ function all_number(){
 
             console.log(returnedData)
             console.log(0)
-            metrix = JSON.parse(returnedData.name)
+            //metrix = JSON.parse(returnedData.name)
+            metrix = returnedData.name
             console.log(1)
             console.log(metrix)
-            const worksheet = XLSX.utils.json_to_sheet(metrix);
-
             
+
+            metrix_good = []
+            date = ''
+            newDate = ''
+            date_arr = []
+
+
+
+          
+            for (i in metrix) {
+                if (metrix[0].date == metrix[i].date){
+                    nem_elem = {}
+                    name_metrics = metrix[i].metrics
+                    nem_elem['metrics'] = metrix[i]['metrics']
+                    for (j in metrix) {
+                        if (metrix[j].metrics == name_metrics){
+                            nem_elem[metrix[j].date] = metrix[j]['value']
+                        }
+                    }
+                    metrix_good.push(nem_elem)
+                }
+                
+            }
+            
+            
+            const worksheet = XLSX.utils.json_to_sheet(metrix_good);
             XLSX.utils.book_append_sheet(wb, worksheet, "Dates");
              
             //date = metrix[0].date
