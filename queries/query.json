@@ -2,17 +2,18 @@
     {"metrics": [
         "Количество клиентов, посещавших МП"
     ],
+    "number": 1,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "SELECT DISTINCT (number) AS value FROM logs.full_add_cart WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list}"
+            "query": "SELECT DISTINCT (number) AS value FROM logs.full_add_cart WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND source IN (2, 3, 4, 5)"
         }
-        
     ]},
     {"metrics": [
         "Количество клиентов, оформивших заказ"
     ],
+    "number": 2,
     "querys": [
         {   
             "source": "MS",
@@ -23,6 +24,7 @@
     {"metrics": [
         "Количество уникальных корзин за период"
     ],
+    "number": 3,
     "querys": [
         {   
             "source": "CH",
@@ -31,18 +33,20 @@
         }
     ]},
     {"metrics": [
-        "Количество добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
+        "Количество добавлений товаров из всех мест МП (поиск, каталог, подборки и др.)"
     ],
+    "number": 4,
     "querys": [
         {   
             "source": "CH",
-            "type": "unique",
-            "query": "SELECT DISTINCT (id_tov) as value FROM logs.full_add_cart WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND isNotNull(id_tov) AND id_element IN ( 'add', 'plus', 'minus', 'edit')"
+            "type": "count",
+            "query": "SELECT count(id_tov) as value FROM logs.full_add_cart WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND isNotNull(id_tov) AND id_element IN ('add', 'button')"
         }  
     ]},
     {"metrics": [
         "Выручка добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
     ],
+    "number": 5,
     "querys": [
         {   
             "source": "MS",
@@ -53,6 +57,7 @@
     {"metrics": [
         "Маржа добавленных товаров из всех мест МП (поиск, каталог, подборки и др.)"
     ],
+    "number": 6,
     "querys": [
         {   
             "source": "MS",
@@ -63,26 +68,29 @@
     {"metrics": [
         "Количество клиентов, заходивших в поиск"
     ],
+    "number": 7,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "SELECT DISTINCT (number) as value  FROM (SELECT number   as number  FROM logs.tovs_search  WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list})"
+            "query": "SELECT DISTINCT (number) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list}"
         }
     ]},
     {"metrics": [
         "Количество клиентов, добавлявших товары из непустого поиска"
     ],
+    "number": 8,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "SELECT DISTINCT (number) as value  FROM (SELECT number   as number  FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND search_bar != '' AND id_element IN ( 'add', 'plus', 'minus', 'edit'))"
+            "query": "SELECT DISTINCT (number) as value  FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND search_bar != '' AND id_element IN ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество уникальных выдач (не пустых)"
     ],
+    "number": 9,
     "querys": [
         {   
             "source": "CH",
@@ -93,6 +101,7 @@
     {"metrics": [
         "Количество разных запросов"
     ],
+    "number": 10,
     "querys": [
         {   
             "source": "CH",
@@ -103,31 +112,34 @@
     {"metrics": [
         "Количество уникальных выдач с добавлением (не пустых)"
     ],
+    "number": 11,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''"
+            "query": "SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'button') AND search_bar != ''"
         }
     ]},
     {"metrics": [
         "Количество товаров добавленных из поиска (не пустого)"
     ],
+    "number": 12,
     "querys": [
         {   
             "source": "CH",
             "type": "count",
-            "query": "SELECT COUNT(id_tov) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''"
+            "query": "SELECT COUNT(id_tov) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'button') AND search_bar != ''"
         }
     ]},
     {"metrics": [
         "Выручка товаров добавленных из поиска (не пустого)"
     ],
+    "number": 13,
     "querys": [
         {   
             "source": "CH",
             "type": "select",
-            "query": "SELECT id_cart, id_tov FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''"
+            "query": "SELECT id_cart, id_tov FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'button') AND search_bar != ''"
         },
         {   
             "source": "MS",
@@ -138,11 +150,12 @@
     {"metrics": [
         "Маржа товаров добавленных из поиска (не пустого)"
     ],
+    "number": 14,
     "querys": [
         {   
             "source": "CH",
             "type": "select",
-            "query": "SELECT id_cart, id_tov FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar != ''"
+            "query": "SELECT id_cart, id_tov FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'button') AND search_bar != ''"
         },
         {   
             "source": "MS",
@@ -153,6 +166,7 @@
     {"metrics": [
         "Количество выдач пустого поиска (рекомендации в пустом поиске)"
     ],
+    "number": 15,
     "querys": [
         {   
             "source": "CH",
@@ -163,36 +177,40 @@
     {"metrics": [
         "Количество выдач пустого поиска (рекомендации в пустом поиске) с добавлением"
     ],
+    "number": 16,
     "querys": [
         {   
             "source": "CH",
             "type": "count",
-            "query": "SELECT COUNT(id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND search_bar = '' AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT COUNT(id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND search_bar = '' AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество товаров, добавленных из пустого поиска"
     ],
+    "number": 17,
     "querys": [
         {   
             "source": "CH",
             "type": "count",
-            "query": "SELECT COUNT(id_tov) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') AND search_bar = ''"
+            "query": "SELECT COUNT(id_tov) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'button') AND search_bar = ''"
         }
     ]},
     {"metrics": [
         "Количество разных запросов без добавления (ни одного добавления за период)"
     ],
+    "number": 18,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "WITH ss as (SELECT uniqExact(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list})SELECT (select sss from ss) - uniqExact(search_bar) as search_bar FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "WITH ss as (SELECT uniqExact(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list})SELECT (select sss from ss) - uniqExact(search_bar) as search_bar FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество выдач 'Ничего не найдено'"
     ],
+    "number": 19,
     "querys": [
         {   
             "source": "CH",
@@ -203,6 +221,7 @@
     {"metrics": [
         "Количество запросов 'Ничего не найдено'"
     ],
+    "number": 20,
     "querys": [
         {   
             "source": "CH",
@@ -213,86 +232,95 @@
     {"metrics": [
         "Количество выдач с интересом: любое действие: добавление, просмотр карточки товара, привозите больше, избранное, списки"
     ],
+    "number": 21,
     "querys": [
         {   
             "source": "CH",
             "type": "count",
-            "query": "SELECT COUNT(id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT COUNT(id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Средняя позиция добавления"
     ],
+    "number": 22,
     "querys": [
         {   
             "source": "CH",
             "type": "avg",
-            "query": "SELECT position as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 0 AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT position as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 0 AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество запросов со средней позицией добавления более 6"
     ],
+    "number": 23,
     "querys": [
         {   
             "source": "CH",
             "type": "count",
-            "query": "SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 6 AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 6 AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество запросов со средней позицией добавления более 12"
     ],
+    "number": 24,
     "querys": [
         {   
             "source": "CH",
             "type": "count",
-            "query": "SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 12 AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 12 AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество запросов со средней позицией добавления более 40"
     ],
+    "number": 25,
     "querys": [
         {   
             "source": "CH",
             "type": "count",
-            "query": "SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 40 AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT COUNT(search_bar) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 40 AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество уникальных выдач с позицией добавления более 6"
     ],
+    "number": 26,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 6 AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 6 AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество уникальных выдач с позицией добавления более 12"
     ],
+    "number": 27,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 12 AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 12 AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Количество уникальных выдач с позицией добавления более 40"
     ],
+    "number": 28,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 40 AND id_element in ( 'add', 'plus', 'minus', 'edit')"
+            "query": "SELECT DISTINCT (id_search) as value FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND position > 40 AND id_element in ('add', 'button')"
         }
     ]},
     {"metrics": [
         "Среднее время от запроса до добавления"
     ],
+    "number": 29,
     "querys": [
         {   
             "source": "CH",
@@ -303,6 +331,7 @@
     {"metrics": [
         "Количество поисковых сессий (Уточнение запроса или исправления ошибки - единая поисковая сессия)"
     ],
+    "number": 30,
     "querys": [
         {   
             "source": "CH",
@@ -313,11 +342,12 @@
     {"metrics": [
         "Количество сессий без добавления"
     ],
+    "number": 31,
     "querys": [
         {   
             "source": "CH",
             "type": "unique",
-            "query": "SELECT number, id_search FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ( 'add', 'plus', 'minus', 'edit') GROUP BY number, id_search"
+            "query": "SELECT number, id_search FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list} AND id_element in ('add', 'button') GROUP BY number, id_search"
         }
     ]}
 ]

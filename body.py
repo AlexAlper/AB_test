@@ -86,7 +86,7 @@ def get_all_tests(file):
 
 
 
-def get_all_numbers_test(id_test, test_file, numbers_len):
+def get_all_numbers_test(id_test, test_file, numbers_len=None):
     file_ = os.path.join(f'{os.path.dirname(__file__)}/queries', 'get_all_numbers.sql')
     with open(file_) as f:
         query = f.read()
@@ -105,7 +105,6 @@ def get_all_numbers_test(id_test, test_file, numbers_len):
     os.chmod(test_file, 0o777)
 
 
-
 def create_file(df: pd.DataFrame, file_name: str) -> str:
     if len(df) == 0:
         return None
@@ -119,7 +118,6 @@ def create_file(df: pd.DataFrame, file_name: str) -> str:
         return None
 
 
-
 def get_time_on_days(date_begin, date_end):
     days = []
     while date_begin < date_end:
@@ -128,6 +126,7 @@ def get_time_on_days(date_begin, date_end):
 
     return days
 
+
 def get_numbers_path(number_path):
     if number_path:
         number_list_path = f'/{number_path[0]}_{number_path[1]}'
@@ -135,6 +134,7 @@ def get_numbers_path(number_path):
         number_list_path = ''
 
     return number_list_path
+
 
 def select_from_bd(query, source):
     df_new = pd.DataFrame()
@@ -167,15 +167,30 @@ def replase_querys(id_test, numbers_len=None):
             if numbers_len:
                 len_num = len(numbers_len[0])
                 if q['source'] == 'CH': 
-                    q['query'] = q['query'].replace('AND number in {number_list}', 'AND number in {number_list}' + f' AND toInt32(substring(number,{7-len_num},7)) between {int(numbers_len[0])} and {int(numbers_len[1])}')
+                    q['query'] = q['query'].replace('AND number in {number_list}', 'AND number in {number_list}' + f' AND toInt32OrZero(substring(number,{7-len_num+1},7)) between {int(numbers_len[0])} and {int(numbers_len[1])}')
                 if q['source'] == 'MS': 
-                    q['query'] = q['query'].replace('AND number in {number_list}', 'AND number in {number_list}' + f' AND CAST(SUBSTRING(number,{7-len_num},7) AS integer) between {int(numbers_len[0])} and {int(numbers_len[1])}')
+                    q['query'] = q['query'].replace('AND number in {number_list}', 'AND number in {number_list}' + f' AND CAST(SUBSTRING(number,{7-len_num+1},7) AS integer) between {int(numbers_len[0])} and {int(numbers_len[1])}')
 
             if id_test == 'all_numbers': 
                 q['query'] = q['query'].replace(' AND number in {number_list}', '')
 
     return j_queries
-            
+
+      
+def get_general_top(query, date_from, date_to):
+
+    return select_from_bd(
+        query.format(
+            date_1=date_from.strftime('%Y-%m-%d'), 
+            date_2=date_to.strftime('%Y-%m-%d')
+        ), 
+        source='CH'
+    )
+
+# def calculation_metrics(id_test, test_file, days_, j_queries, numbers_path=None):
+
+#     for 
+#     get_metrics(id_test, test_file, days_, j_queries, numbers_path=None)
 
 
 def get_metrics(id_test, test_file, days_, j_queries, numbers_path=None):
@@ -385,55 +400,95 @@ def get_metrics_complex(id_test, test_file, days_, j_queries, numbers_path=None)
                             os.chmod(file, 0o777)
 
 
-def top_query(date_from, date_to, number_len):
+def get_top_query(date_from, date_to, number_len):
     file_ = os.path.join(f'{os.path.dirname(__file__)}/queries', 'top_query.sql')
     with open(file_) as f:
         query_main = f.read()
+
+    df_all = pd.DataFrame()
+
+    query = "SELECT search_bar, COUNT(DISTINCT number) as number_all_ FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' GROUP BY search_bar"
+
+    df_number_all = get_general_top(query, date_from, date_to)
+
+    query = "SELECT search_bar, COUNT(id_search) as search_all_ FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' GROUP BY search_bar"
+
+    df_search_all = get_general_top(query, date_from, date_to)
+
+    query = "SELECT search_bar, COUNT(id_search) as add_all FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND id_element in ('add', 'button') GROUP BY search_bar"
+
+    df_search_add_all = get_general_top(query, date_from, date_to)
+
+    df_all = pd.concat([df_all, df_number_all])
+
+    df_all = (
+        df_all.merge(
+            df_search_all,
+            how='outer',
+            on=['search_bar'],
+            suffixes=['_x', '_y']
+        )
+    )
+
+    df_all = (
+        df_all.merge(
+            df_search_add_all,
+            how='outer',
+            on=['search_bar'],
+            suffixes=['_x', '_y']
+        )
+    )
 
     query_main = query_main.format(
         date_1=date_from.strftime('%Y-%m-%d'), 
         date_2=date_to.strftime('%Y-%m-%d')
     )
 
-    df_all = pd.DataFrame()
-
     num = 0
 
     for num_1, num_2 in number_len:
         len_num = len(num_1)
-        query = query_main.replace('AND number in number_list', f' AND toInt32(substring(number,{7-len_num},7)) between {int(num_1)} and {int(num_2)}')
+
+        query = "SELECT search_bar, COUNT(1) as search_bar_add_all_ FROM logs.tovs_search WHERE date_add between '{date_1}' and '{date_2}' AND id_element in ('add', 'button') AND number in number_list GROUP BY search_bar"
+        query = query.replace('AND number in number_list', f' AND toInt32OrZero(substring(number,{7-len_num+1},7)) between {int(num_1)} and {int(num_2)}')
+
+        df_search_bar_add_all = get_general_top(query, date_from, date_to)
+        query = query_main.replace('AND number in number_list', f' AND toInt32OrZero(substring(number,{7-len_num+1},7)) between {int(num_1)} and {int(num_2)}')
 
         df_new = select_from_bd(query, source='CH')
+
+        df_new = (
+            df_new.merge(
+                df_search_bar_add_all,
+                how='outer',
+                on=['search_bar'],
+                suffixes=['_x', '_y']
+            )
+        )
+
+        columns_int = ['cout_numbers','cout_id_search','search_bar_add_all_']
+        columns_float = ['avg_position','avg_rn_max']
+
+        df_new[columns_int] = df_new[columns_int].fillna(0).astype('int64').round(2)
+        df_new[columns_float] = df_new[columns_float].fillna(0).astype('float64').round(2)
+
+        df_new['konv_'] = df_new['search_bar_add_all_'] / df_new['cout_id_search'] - 1
 
         df_all = (
             df_all.merge(
                 df_new,
                 how='outer',
-                on=['product_id', 'stock_name'],
-                suffixes=['_x', '_y'],
-                indicator=True
+                on=['search_bar'],
+                suffixes=['_x', '_y']
             )
         )
 
-        # if num == 0:
-        #     df_new = select_from_bd(query, source='CH')
-        #     num +=1
-        #     continue
+    if not df_all.empty: 
+        df_all['delta_konv'] = df_all['konv__x'] / df_all['konv__y'] - 1
+        df_all['delta_avg'] = df_all['avg_position_y'] / df_all['avg_position_x'] - 1 
 
-        # df_new = select_from_bd(query, source='CH')
+        df_all = df_all.fillna(0).round(2)
 
-        # df_all = df_all.merge(
-        #     df_new, 
-        #     how='outer', 
-        #     on='search_bar', 
-        #     suffixes=('_x', '_y')
-        # )
+        # df_all = df_all[(df_all['delta_konv'] > 0) | (df_all['delta_avg'] > 0)]
 
-    df_all['delta_konv'] = df_all['konv__x'] / df_all['konv__y'] - 1
-    df_all['delta_avg'] = df_all['avg_position_x'] / df_all['avg_position_y'] - 1 
-
-    df_all = df_all.fillna(0)
-
-    print(df_all[df_all['delta_avg']=='огурец'])
-
-    return df_all
+    return df_all.to_json(orient='records')
