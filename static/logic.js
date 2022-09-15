@@ -65,9 +65,9 @@ function cmd(){
 function top_request(){
     console.log('top request')
    
-    $("#result").html("Получение топ запросов")
-
     
+
+    //document.getElementById("result").innerHTML  = 'тестовый запрос'
 
     var date_from = document.getElementById("date_from").value;
     var date_before = document.getElementById("date_before").value;
@@ -78,14 +78,31 @@ function top_request(){
 
     var frequency = document.getElementById("frequency").value;
     var count_add = document.getElementById("count_add").value;
+    var frequency_max = document.getElementById("frequency_max").value;
+    var count_add_max = document.getElementById("count_add_max").value;
     var select_delta = document.getElementById("select_delta").value;
 
-    if (frequency < 0) {
-        frequency = 0
+   // console.log(frequency)
+  //console.log(Number.isNaN(frequency))
+
+    if (frequency <= 0 || frequency == '') {
+        frequency = 1
+        document.getElementById("frequency").value = '1'
     }
-    if (count_add < 0) {
-        count_add = 0
+    if (count_add <= 0 || count_add == '') {
+        count_add = 1
+        document.getElementById("count_add").value = '1'
     }
+    if (frequency_max <= 0 || frequency_max == '') {
+        frequency_max = 1000000
+        document.getElementById("frequency_max").value = '1000000'
+    }
+    if (count_add_max <= 0 || count_add_max == '') {
+        count_add_max = 1000000
+        document.getElementById("count_add_max").value = '1000000'
+    }
+
+
 
     $.ajax({
         type: "POST",
@@ -95,7 +112,7 @@ function top_request(){
             console.log('0')
             var returnedData = JSON.parse(data);
 
-            $("#result").html("Данные получены")
+           
 
             console.log('1')
             if (returnedData.error == 1) {
@@ -103,7 +120,7 @@ function top_request(){
                 return
             }
             
-            $("#result").html("Хоп хей")
+
 
             var wb = XLSX.utils.book_new();
             wb.Props = {
@@ -123,7 +140,9 @@ function top_request(){
             console.log(3)
             console.log(metrix)
             
-            metrix_good = []
+            metrix_good_1 = []
+            metrix_good_2 = []
+            all_pages = []
             date = ''
             newDate = ''
             date_arr = []
@@ -144,9 +163,19 @@ function top_request(){
                 
             }*/
 
+            select = 'delta_avg'
+
+            if (select_delta == 'Дельта конверсии') {
+                select = 'delta_konv'
+            } 
+
+            
+            all_pages = {}
+            max_len = 1
+            index = 0
             console.log(4)
             for (i in metrix){
-                if ((metrix[i].delta_konv == 0 || metrix[i].delta_avg == 0) && frequency < metrix[i]['search_all_'] && count_add < metrix[i]['add_all']) {
+                if (count_add_max >= metrix[i]['add_all'] && frequency_max >= metrix[i]['search_all_']  && frequency <= metrix[i]['search_all_'] && count_add <= metrix[i]['add_all'] && metrix[i][select] > 0 && max_len < 300000) {
                     nem_elem = {}
                     nem_elem['Запрос'] = metrix[i]['search_bar']
 
@@ -171,16 +200,30 @@ function top_request(){
                     nem_elem['дельта конверсии отбор по максимальному значению только положительные'] = metrix[i]['delta_konv']
                     nem_elem['дельта средней позиции отбор по максимальному значению только положительные'] = metrix[i]['delta_avg']
                     
-                    metrix_good.push(nem_elem)
+                    max_len = max_len + 1
+
+                    //index = Math.floor(max_len/100000)
+
+                    if (max_len < 150000) {
+                        metrix_good_1.push(nem_elem)
+                    } else {
+                        metrix_good_2.push(nem_elem)
+                    }
+                    
                 }
             }
-            console.log(5)
-            $("#result").html("Данные преобразованы")
 
-            const worksheet = XLSX.utils.json_to_sheet(metrix_good);
-            XLSX.utils.book_append_sheet(wb, worksheet, "Dates");
+      
+            console.log(5)
+       
+            const worksheet = XLSX.utils.json_to_sheet(metrix_good_1);
+            XLSX.utils.book_append_sheet(wb, worksheet, 'Metric');
+
+         
+
             console.log(6)
             var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+
             function s2ab(s) {
         
                     var buf = new ArrayBuffer(s.length);
@@ -189,8 +232,29 @@ function top_request(){
                     return buf;
                     
             }
+
             console.log(7)
+
             saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'ab-test.xlsx');
+            
+            console.log(8)
+
+            /*
+            if (max_len > 150000) {
+
+                var wb_1 = XLSX.utils.book_new();
+                    wb_1.Props = {
+                        Title: "AB tests",
+                        Subject: "ab-test",
+                    };
+
+                const worksheet_1 = XLSX.utils.json_to_sheet(metrix_good_2);
+                XLSX.utils.book_append_sheet(wb_1, worksheet_1, 'Metric');
+                var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+                saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'ab-test.xlsx');
+            }
+            */
+            console.log(9)
         
       },
     });  

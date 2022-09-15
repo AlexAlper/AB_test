@@ -472,7 +472,7 @@ def get_top_query(date_from, date_to, number_len):
         df_new[columns_int] = df_new[columns_int].fillna(0).astype('int64').round(2)
         df_new[columns_float] = df_new[columns_float].fillna(0).astype('float64').round(2)
 
-        df_new['konv_'] = df_new['search_bar_add_all_'] / df_new['cout_id_search'] - 1
+        df_new['konv_'] = df_new['search_bar_add_all_'] / df_new['cout_id_search']
 
         df_all = (
             df_all.merge(
