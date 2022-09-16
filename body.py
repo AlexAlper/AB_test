@@ -85,26 +85,6 @@ def get_all_tests(file):
     os.chmod(file, 0o777)
 
 
-
-def get_all_numbers_test(id_test, test_file, numbers_len=None):
-    file_ = os.path.join(f'{os.path.dirname(__file__)}/queries', 'get_all_numbers.sql')
-    with open(file_) as f:
-        query = f.read()
-
-    if numbers_len:
-        len_num = len(numbers_len[0])
-        query = query.replace('id_ab_test = {id_test}', 'id_ab_test = {id_test}' + f' AND CAST(SUBSTRING(number,{7-len_num},7) AS integer) between {int(numbers_len[0])} and {int(numbers_len[1])}')
-    
-    sourсe = MsSQL(
-        params=copy.deepcopy(ms_c_03)
-    )
-    
-    df = sourсe.select_to_df(query.format(id_test=id_test))
-    df['Type_test'] = df['Type_test'].str.strip()
-    df.to_parquet(test_file)
-    os.chmod(test_file, 0o777)
-
-
 def create_file(df: pd.DataFrame, file_name: str) -> str:
     if len(df) == 0:
         return None
@@ -125,15 +105,6 @@ def get_time_on_days(date_begin, date_end):
         date_begin = date_begin + timedelta(days=1)
 
     return days
-
-
-def get_numbers_path(number_path):
-    if number_path:
-        number_list_path = f'/{number_path[0]}_{number_path[1]}'
-    else:
-        number_list_path = ''
-
-    return number_list_path
 
 
 def select_from_bd(query, source):
