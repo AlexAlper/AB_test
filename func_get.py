@@ -35,7 +35,7 @@ def get_tests():
 
     return [f"{i['id_ab_test']} {i['Descr_ab_test'].strip()}" for i in all_tests]
 
-def get_info(id_test, date_begin, date_end, week=False, number_list=None, breakdown_by_dates=False):
+def get_info_2(id_test, date_begin, date_end, week=False, number_list=None, breakdown_by_dates=False):
     id_test = id_test.split(' ')[0]
 
     number_list_path = body.get_numbers_path(number_list)
@@ -199,7 +199,7 @@ def get_info(id_test, date_begin, date_end, week=False, number_list=None, breakd
 
     return df_all.to_json(orient='records')
 
-def get_info_2(id_test, date_begin, date_end, week=False, number_list=None, breakdown_by_dates=False):
+def get_info(id_test, date_begin, date_end, week=False, number_list=None, breakdown_by_dates=False):
 
     if number_list:
         i=0
@@ -234,7 +234,7 @@ def get_info_2(id_test, date_begin, date_end, week=False, number_list=None, brea
 
             # # прверить
             metrics.add_count_search_with_interesting()
-            # # metrics.add_avg_position_add()
+            # metrics.add_avg_position_add()
             metrics.add_count_add_position_6()
             metrics.add_count_add_position_12()
             metrics.add_count_add_position_40()
@@ -341,7 +341,7 @@ if __name__=='__main__':
     days_ = body.get_time_on_days(date_begin, date_end + timedelta(days=1))
 
 
-    print(get_info_2(4, date_begin, date_end, week=True, number_list=[('0','4'), ('5','9')], breakdown_by_dates=False))
+    print(get_info(4, date_begin, date_end, week=True, number_list=[('0','4'), ('5','9')], breakdown_by_dates=False))
     exit(0)
 
     # test_number = os.path.join(f'{os.path.dirname(__file__)}/all_answers/{id_test}', 'number.parquet')
