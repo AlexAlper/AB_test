@@ -341,8 +341,8 @@ if __name__=='__main__':
     days_ = body.get_time_on_days(date_begin, date_end + timedelta(days=1))
 
 
-    print(get_info(4, date_begin, date_end, week=True, number_list=[('0','4'), ('5','9')], breakdown_by_dates=False))
-    exit(0)
+    # print(get_info(4, date_begin, date_end, week=True, number_list=[('0','4'), ('5','9')], breakdown_by_dates=False))
+    # exit(0)
 
     # test_number = os.path.join(f'{os.path.dirname(__file__)}/all_answers/{id_test}', 'number.parquet')
 
@@ -478,7 +478,7 @@ if __name__=='__main__':
     # metrics_3.add_count_search_with_interesting()
     # metrics_4.add_count_search_with_interesting()
 
-    # # metrics_1.add_avg_position_add()
+    metrics_1.add_avg_position_add()
     # # metrics_2.add_avg_position_add()
     # # metrics_3.add_avg_position_add()
     # # metrics_4.add_avg_position_add()
@@ -498,17 +498,17 @@ if __name__=='__main__':
     # metrics_3.add_count_add_position_40()
     # metrics_4.add_count_add_position_40()
 
-    # metrics_1.add_count_q_position_6()
+    metrics_1.add_count_q_position_6()
     # metrics_2.add_count_q_position_6()
     # metrics_3.add_count_q_position_6()
     # metrics_4.add_count_q_position_6()
 
-    # metrics_1.add_count_q_position_12()
+    metrics_1.add_count_q_position_12()
     # metrics_2.add_count_q_position_12()
     # metrics_3.add_count_q_position_12()
     # metrics_4.add_count_q_position_12()
 
-    # metrics_1.add_count_q_position_40()
+    metrics_1.add_count_q_position_40()
     # metrics_2.add_count_q_position_40()
     # metrics_3.add_count_q_position_40()
     # metrics_4.add_count_q_position_40()

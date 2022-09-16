@@ -247,12 +247,12 @@ class Metrics():
                         df_new = pd.DataFrame()
                         for page in range(0, len(number_list), step):
                             page_query = number_list[page:page + step]
-                            query = query.format(
+                            query_q = query.format(
                                 number_list=str(tuple(page_query)).replace(",)", ")")
                             )
 
                             if query != '':
-                                df_c = self._select_from_bd(query, source)
+                                df_c = self._select_from_bd(query_q, source)
                                 if not df_c.empty:
                                     df_new = pd.concat([df_new, df_c])
                             else:
@@ -825,28 +825,48 @@ class Metrics():
         self.df_full = pd.concat([self.df_full, df])
 
     def add_count_q_position_6(self):
-        # переделать
         metric = "Количество запросов со средней позицией добавления более 6"
         name_param = 'count_q_position_6'
         source = "CH"
-        type_q = "count"
+        type_q = "unique"
 
-        query = "SELECT search_bar as value, position " \
+        query = "SELECT search_bar, position " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND id_element in ('add', 'button') " \
-                "GROUP BY search_bar"
+                "AND id_element in ('add', 'button') "
 
-        df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
-        self.df_full = pd.concat([self.df_full, df])
+        for date_from, date_to in self.days_:
+            self.get_metrics(
+                query=self.replase_querys_general(query, source, date_from, date_to),
+                date_from=date_from,
+                date_to=date_to,
+                name_param='count_q_position_all',
+                source=source,
+                type_q=type_q,
+                metric=metric
+            )
+
+        df = self.merge_data('count_q_position_all')
+
+        df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(2)
+        df_avg = df_avg[df_avg['position'] > 6]
+        df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
+        df_avg = df_avg.rename(
+            columns={
+                'search_bar': name_param
+            }
+        )
+        df_avg = df_avg.groupby(self.index).count()
+        df_avg = df_avg.reset_index(self.index)
+        self.df_full = pd.concat([self.df_full, df_avg])
+
 
     def add_count_q_position_12(self):
-        # переделать
         metric = "Количество запросов со средней позицией добавления более 12"
         name_param = 'count_q_position_12'
         source = "CH"
-        type_q = "count"
+        type_q = "unique"
 
         query = "SELECT COUNT(search_bar) as value " \
                 "FROM logs.tovs_search " \
@@ -855,15 +875,37 @@ class Metrics():
                 "AND position > 12 " \
                 "AND id_element in ('add', 'button')"
 
-        df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
-        self.df_full = pd.concat([self.df_full, df])
+        for date_from, date_to in self.days_:
+            self.get_metrics(
+                query=self.replase_querys_general(query, source, date_from, date_to),
+                date_from=date_from,
+                date_to=date_to,
+                name_param='count_q_position_all',
+                source=source,
+                type_q=type_q,
+                metric=metric
+            )
+
+        df = self.merge_data('count_q_position_all')
+
+        df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(2)
+        df_avg = df_avg[df_avg['position'] > 12]
+        df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
+        df_avg = df_avg.rename(
+            columns={
+                'search_bar': name_param
+            }
+        )
+        df_avg = df_avg.groupby(self.index).count()
+        df_avg = df_avg.reset_index(self.index)
+        self.df_full = pd.concat([self.df_full, df_avg])
+
 
     def add_count_q_position_40(self):
-        # переделать
         metric = "Количество запросов со средней позицией добавления более 40"
         name_param = 'count_q_position_40'
         source = "CH"
-        type_q = "count"
+        type_q = "unique"
 
         query = "SELECT COUNT(search_bar) as value " \
                 "FROM logs.tovs_search " \
@@ -872,8 +914,31 @@ class Metrics():
                 "AND position > 40 " \
                 "AND id_element in ('add', 'button')"
 
-        df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
-        self.df_full = pd.concat([self.df_full, df])
+        for date_from, date_to in self.days_:
+            self.get_metrics(
+                query=self.replase_querys_general(query, source, date_from, date_to),
+                date_from=date_from,
+                date_to=date_to,
+                name_param='count_q_position_all',
+                source=source,
+                type_q=type_q,
+                metric=metric
+            )
+
+        df = self.merge_data('count_q_position_all')
+
+        df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(2)
+        df_avg = df_avg[df_avg['position'] > 40]
+        df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
+        df_avg = df_avg.rename(
+            columns={
+                'search_bar': name_param
+            }
+        )
+        df_avg = df_avg.groupby(self.index).count()
+        df_avg = df_avg.reset_index(self.index)
+        self.df_full = pd.concat([self.df_full, df_avg])
+
 
     def add_unique_search_position_6(self):
         metric = "Количество уникальных выдач с позицией добавления более 6"

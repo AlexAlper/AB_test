@@ -1,7 +1,8 @@
 import pandas as pd
 
-df = pd.read_parquet('tmp_cache/4/20220909_20220910_B_unique_numbers_bye_orders.parquet')
+df = pd.read_parquet('tmp_cache/4/20220909_20220910_A_avg_position_add.parquet')
 
+print(df)
 print(df['metric'].unique())
 
 
