@@ -1,31 +1,8 @@
-import glob
-import os
-from datetime import timedelta, datetime
+import pandas as pd
 
-id_test = 4
+df = pd.read_parquet('tmp_cache/4/20220909_20220910_B_unique_numbers_bye_orders.parquet')
 
-date_begin = datetime(2022,8,26)
-date_end = datetime(2022,8,30)
-
-def get_time_on_days(date_begin, date_end):
-    days = []
-    while date_begin < date_end:
-        days.append((date_begin, date_begin + timedelta(days=1)))
-        date_begin = date_begin + timedelta(days=1)
-
-    return days
-
-days_ = get_time_on_days(date_begin, date_end + timedelta(days=1))
-
-for date_from, date_to in days_:
-    files = glob.glob(f"{os.path.dirname(__file__)}/all_answers/{id_test}/{date_from.strftime('%Y%m%d')}_{date_to.strftime('%Y%m%d')}*.parquet")
-    # if os.path.exists(files):                        
-    #     df_metrics = pd.read_parquet(files)       
-    #     df_full = pd.concat([df_full,df_metrics])
-    for file in files:
-        df_metrics = pd.read_parquet(files)       
-        df_full = pd.concat([df_full,df_metrics])
-
+print(df['metric'].unique())
 
 
 # from email.header import Header
