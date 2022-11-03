@@ -25,7 +25,7 @@ def hello_world():
 @app.route("/cmd", methods=['GET', 'POST'])
 def cmd():
     print('metrix_all')
-    if request.form['idAB'] == '':
+    if request.form['idAB'] == '' and request.form['idAB'] == '':
         return dumps({'name': 'Выберите тест', 'error': 1})
     if request.form['date_from'] == '' or request.form['date_before'] == '':
         return dumps({'name': 'Выберите дату', 'error': 1})
@@ -51,10 +51,20 @@ def cmd():
     A_end = request.form['A_end']
     B_start = request.form['B_start']
     B_end = request.form['B_end']
-    number_list = [A_start, A_end]
+    selectAB = request.form['idAB']
 
 
-    answer = get_info("all_numbers",dt_start, dt_end, number_list=number_list)
+    if selectAB = '':
+        answer = get_info("all_numbers",dt_start, dt_end, number_list=numbers_len, delta_konv=0.1, delta_avg=20)
+    else:
+        answer = get_info(idAB, dt_start, dt_end)
+
+
+    #number_list = [A_start, A_end]
+    numbers_len = [(A_start, A_end), (B_start, B_end)]
+
+    #get_info('all_numbers', dt_start, dt_end, number_list=[('0','4'), ('5','9')])
+    answer = get_info("all_numbers",dt_start, dt_end, number_list=numbers_len, delta_konv=0.1, delta_avg=20)
 
     print('answer')
     return dumps({'name': answer, 'error': 0})
@@ -98,7 +108,7 @@ def top_request():
     print(numbers_len)
 
     print('top_request_request')
-    answer = get_top(dt_start, dt_end, numbers_len = numbers_len)
+    answer = get_top(dt_start, dt_end, numbers_len = numbers_len,delta_plus=True)
     print('top_request_data_get')
 
     return dumps({'name': answer, 'error': 0})
@@ -106,7 +116,7 @@ def top_request():
 
 if __name__ == '__main__':  
     app.debug = True
-    app.run(host="0.0.0.0", port=9300)
+    app.run(host="0.0.0.0", port=9301)
 
 
 

@@ -3,7 +3,7 @@ from operator import index
 import os
 from select import select
 import pandas as pd
-from body import select_from_bd
+from top_query import select_from_bd
 from mssql import MsSQL
 import pathlib
 from dotenv import load_dotenv
@@ -108,7 +108,7 @@ class Metrics():
         date_end = self.date_to
         days = []
         while date_begin < date_end:
-            days.append((date_begin, date_begin + timedelta(days=1)))
+            days.append((date_begin, date_begin.replace(hour=23,minute=59,second=59)))
             date_begin = date_begin + timedelta(days=1)
 
         return days
@@ -182,6 +182,19 @@ class Metrics():
 
         return [(numbers_a, 'A'), (numbers_b, 'B')]
 
+
+    def create_numbers_group(self, df):
+        df_new = df.groupby('group')['number'].apply(list)
+        df_new = df_new.reset_index()
+        ss = []
+        for i, row in df_new.iterrows():
+            s = list(row)
+
+            ss.append((s[1], s[0]))
+
+        self.number_groups = ss
+
+
     def replase_querys_general(self, query: str, source: str, date_from, date_to):
 
         if self.numbers_range:
@@ -203,36 +216,35 @@ class Metrics():
 
         if source == 'MS':
             query = query.replace('{date_1}', date_from.strftime('%Y%m%d')).replace('{date_2}',
-                                                                                    date_to.strftime('%Y%m%d'))
+                                                                                    date_to.strftime('%Y%m%d %H:%M:%S'))
         else:
             query = query.replace('{date_1}', date_from.strftime('%Y-%m-%d')).replace('{date_2}',
-                                                                                      date_to.strftime('%Y-%m-%d'))
+                                                                                      date_to.strftime('%Y-%m-%d %H:%M:%S'))
 
         return query
 
     def _select_from_bd(self, query, source):
         df_new = pd.DataFrame()
+        try:
+            if source == 'MS':
+                df_new = sourсe_06.select_to_df(query)
+            else:
+                http = requests.post(
+                    url=url,
+                    data=query,
+                    headers=HEADER
+                )
 
-        if source == 'MS':
-            df_new = sourсe_06.select_to_df(query)
-        else:
-            http = requests.post(
-                url=url,
-                data=query,
-                headers=HEADER
-            )
+                if http.status_code != 200:
+                    return df_new
 
-            if http.status_code != 200:
-                return df_new
-
-            df_new = pd.DataFrame(json.loads(http.text))
+                df_new = pd.DataFrame(json.loads(http.text))
+        except Exception as err:
+            print(err)
 
         return df_new
 
     def get_metrics(self, query, name_param, source, type_q, metric, date_from, date_to, step=10000):
-
-        print(metric)
-        print(query)
 
         id_test = self.id_test
 
@@ -241,9 +253,10 @@ class Metrics():
                 if number_list:
                     file_tests = os.path.join(
                         self.path_cache,
-                        f"{date_from.strftime('%Y%m%d')}_{date_to.strftime('%Y%m%d')}_{test_type}_{name_param}.parquet"
+                        f"{date_from.strftime('%Y%m%d')}_{test_type}_{name_param}.parquet"
                     )
                     if not os.path.exists(file_tests):
+
                         df_new = pd.DataFrame()
                         for page in range(0, len(number_list), step):
                             page_query = number_list[page:page + step]
@@ -265,14 +278,14 @@ class Metrics():
                             df_new['metric'] = metric
                             df_new['type_q'] = type_q
                             df_new['test_type'] = test_type
-                            df_new['week'] = df_new['date'].dt.week
+                            df_new['week'] = df_new['date'].dt.isocalendar().week
                             df_new.to_parquet(file_tests)
                             os.chmod(file_tests, 0o777)
 
         else:
             file_tests = os.path.join(
                 self.path_cache,
-                f"{date_from.strftime('%Y%m%d')}_{date_to.strftime('%Y%m%d')}_{name_param}.parquet"
+                f"{date_from.strftime('%Y%m%d')}_{name_param}.parquet"
             )
             if not os.path.exists(file_tests):
                 df_new = pd.DataFrame()
@@ -281,10 +294,11 @@ class Metrics():
                 if not df_new.empty:
                     df_new['date'] = date_from
                     df_new['date_view'] = str(date_from)[:10]
+                    df_new['name_param'] = name_param
                     df_new['metric'] = metric
                     df_new['type_q'] = type_q
                     df_new['test_type'] = id_test
-                    df_new['week'] = df_new['date'].dt.week
+                    df_new['week'] = df_new['date'].dt.isocalendar().week
                     df_new.to_parquet(file_tests)
                     os.chmod(file_tests, 0o777)
 
@@ -301,21 +315,23 @@ class Metrics():
             )
 
         df = self.merge_data(name_param)
-        df.set_index(self.index, inplace=True)
-        df = df.rename(
-            columns={
-                'value': name_param,
-            }
-        )
 
-        if type_q == "unique":
-            df = df[name_param].drop_duplicates().groupby(level=self.index).count()
-        elif type_q == "count" or type_q == "sum":
-            df = df[name_param].fillna('0').astype('int64').groupby(level=self.index).sum()
-        elif type_q == "avg":
-            df = df[name_param].fillna('0').astype('int64').groupby(level=self.index).mean().round(2)
+        if not df.empty:
+            df.set_index(self.index, inplace=True)
+            df = df.rename(
+                columns={
+                    'value': name_param,
+                }
+            )
 
-        df = self.get_zero_values(df, name_param, metric)
+            if type_q == "unique":
+                df = df[name_param].drop_duplicates().groupby(level=self.index).count()
+            elif type_q == "count" or type_q == "sum":
+                df = df[name_param].fillna('0').astype('int64').groupby(level=self.index).sum()
+            elif type_q == "avg":
+                df = df[name_param].fillna('0').astype('int64').groupby(level=self.index).mean().round(2)
+
+        df = self.get_zero_values(df, name_param, metric, type_q)
 
         df = df.reset_index(level=self.index)
         
@@ -366,23 +382,30 @@ class Metrics():
     def merge_data(self,name_param):
         df = pd.DataFrame()
         for date_from, date_to in self.days_:
-            files = glob.glob(f"{self.path_cache}/{date_from.strftime('%Y%m%d')}_{date_to.strftime('%Y%m%d')}*{name_param}.parquet")
+            files = glob.glob(f"{self.path_cache}/{date_from.strftime('%Y%m%d')}*{name_param}.parquet")
             for file in files:
-                df = pd.concat([df, pd.read_parquet(file)])
+                df_new = pd.read_parquet(file)
+                df = pd.concat([df, df_new])
 
         return df
 
-    def get_zero_values(self, df, name_param, metric):
+    def get_zero_values(self, df, name_param, metric, type_q):
 
-        df = df.reset_index(level=self.index)
+        df = df.reset_index()
 
         if self.id_test != 'all_numbers':
             df_zero = pd.DataFrame()
-            for t in ['A', 'B']:
-                new_row = df.copy()[-1:]
-                new_row['test_type'] = t
-                new_row[name_param] = 0
-                df_zero = pd.concat([df_zero, new_row])
+            for number_list, test_type in self.number_groups:
+                df_new = pd.DataFrame()
+                for date_from, date_to in self.days_:
+                    df_new['date'] = date_from
+                    df_new['date_view'] = str(date_from)[:10]
+                    df_new['metric'] = metric
+                    df_new['type_q'] = type_q
+                    df_new['test_type'] = test_type
+                    df_new['week'] = df_new['date'].dt.isocalendar().week
+                    df_new[name_param] = 0
+                df_zero = pd.concat([df_zero, df_new])
         else:
             df_zero = pd.DataFrame(
                 {
@@ -392,7 +415,6 @@ class Metrics():
             )
 
         df = pd.concat([df, df_zero])
-
         df = df.groupby(by=self.index).sum()
 
         return df
@@ -402,6 +424,8 @@ class Metrics():
         name_param = 'unique_numbers_all'
         source = "CH"
         type_q = "unique"
+
+        print(metric)
 
         query = "SELECT DISTINCT (number) AS value " \
                 "FROM logs.full_add_cart " \
@@ -417,6 +441,8 @@ class Metrics():
         name_param = 'unique_numbers_bye_orders'
         source = "MS"
         type_q = "unique"
+
+        print(metric)
 
         query = "SELECT DISTINCT (number) as value " \
                 "FROM Loyalty03..Orders_header WITH (NOLOCK) " \
@@ -435,6 +461,8 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
+        print(metric)
+
         query = "SELECT DISTINCT (id_cart) as value " \
                 "FROM logs.full_add_cart " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
@@ -448,6 +476,8 @@ class Metrics():
         name_param = 'count_tov_add'
         source = "CH"
         type_q = "count"
+
+        print(metric)
 
         query = "SELECT count(id_tov) as value " \
                 "FROM logs.full_add_cart " \
@@ -464,6 +494,8 @@ class Metrics():
         name_param = 'sum_bye_tov'
         source = "MS"
         type_q = "sum"
+
+        print(metric)
 
         query = "SELECT sum(Order_line.base_sum) as value " \
                 "FROM Loyalty03..Orders_header as Orders_header (NOLOCK) " \
@@ -483,6 +515,8 @@ class Metrics():
         name_param = 'sum_margin_tov'
         source = "MS"
         type_q = "sum"
+
+        print(metric)
 
         query = "SELECT sum(Order_line.base_sum - Order_line.quantity * Sebest_tov_tbl.Sebestoimost_nds) as value " \
                 "FROM Loyalty03..Orders_header as Orders_header (NOLOCK) " \
@@ -507,6 +541,8 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
+        print(metric)
+
         query = "SELECT DISTINCT (number) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' AND number in {number_list}"
@@ -520,11 +556,13 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
+        print(metric)
+
         query = "SELECT DISTINCT (number) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND search_bar != '' " \
+                "AND trim(lowerUTF8(search_bar)) != '' " \
                 "AND id_element IN ('add', 'button') " \
                 "AND id_screen not like 'catalog/catalog_search/subcategories%'"
 
@@ -535,13 +573,15 @@ class Metrics():
         metric = "Количество уникальных выдач (не пустых)"
         name_param = 'unique_search_unempty_q'
         source = "CH"
-        type_q = "count"
+        type_q = "unique"
 
-        query = "SELECT COUNT(DISTINCT id_search) as value " \
+        print(metric)
+
+        query = "SELECT DISTINCT id_search as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND search_bar != ''"
+                "AND trim(lowerUTF8(search_bar)) != ''"
 
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
         self.df_full = pd.concat([self.df_full, df])
@@ -552,7 +592,9 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
-        query = "SELECT DISTINCT (search_bar) as value " \
+        print(metric)
+
+        query = "SELECT DISTINCT (trim(lowerUTF8(search_bar))) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list}"
@@ -566,12 +608,14 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
+        print(metric)
+
         query = "SELECT DISTINCT (id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
                 "AND id_element in ('add', 'button') " \
-                "AND search_bar != ''"
+                "AND trim(lowerUTF8(search_bar)) != ''"
 
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
         self.df_full = pd.concat([self.df_full, df])
@@ -582,6 +626,8 @@ class Metrics():
         source = "CH"
         type_q = "count"
 
+        print(metric)
+
         query = "SELECT COUNT(id_tov) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
@@ -589,7 +635,7 @@ class Metrics():
                 "AND isNotNull(id_tov) " \
                 "AND id_screen not like 'catalog/catalog_search/subcategories%' " \
                 "AND id_element in ('add', 'button') " \
-                "AND search_bar != ''"
+                "AND trim(lowerUTF8(search_bar)) != ''"
 
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
         self.df_full = pd.concat([self.df_full, df])
@@ -600,13 +646,15 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
+        print(metric)
+
         query = "SELECT id_cart, id_tov " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
                 "AND isNotNull(id_tov) " \
                 "AND id_element in ('add', 'button') " \
-                "AND search_bar != '' GROUP BY id_cart, id_tov"
+                "AND trim(lowerUTF8(search_bar)) != '' GROUP BY id_cart, id_tov"
         query = self.replase_querys_general(query, source)
         self.get_metrics(query, name_param, source, type_q, metric)
 
@@ -631,13 +679,15 @@ class Metrics():
         source = "CH"
         type_q = "select"
 
+        print(metric)
+
         query = "SELECT id_cart, id_tov " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
                 "AND isNotNull(id_tov) " \
                 "AND id_element in ('add', 'button') " \
-                "AND search_bar != '' " \
+                "AND trim(lowerUTF8(search_bar)) != '' " \
                 "GROUP BY id_cart, id_tov"
         query = self.replase_querys_general(query, source)
         self.get_metrics(query, name_param, source, type_q, metric)
@@ -663,11 +713,13 @@ class Metrics():
         source = "CH"
         type_q = "count"
 
+        print(metric)
+
         query = "SELECT COUNT(id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND search_bar = '' " \
+                "AND trim(lowerUTF8(search_bar)) = '' " \
                 "AND id_screen not like 'catalog/catalog_search/subcategories%' " \
                 "AND id_element in ('add', 'button')"
 
@@ -680,6 +732,8 @@ class Metrics():
         source = "CH"
         type_q = "count"
 
+        print(metric)
+
         query = "SELECT COUNT(id_tov) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
@@ -687,7 +741,7 @@ class Metrics():
                 "AND number in {number_list} " \
                 "AND id_screen not like 'catalog/catalog_search/subcategories%' " \
                 "AND id_element in ('add', 'button') " \
-                "AND search_bar = ''"
+                "AND trim(lowerUTF8(search_bar)) = ''"
 
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
         self.df_full = pd.concat([self.df_full, df])
@@ -698,17 +752,44 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
-        query = "WITH ss as (" \
-                "SELECT uniqExact(search_bar) as value " \
-                "FROM logs.tovs_search " \
-                "WHERE date_add between '{date_1}' and '{date_2}' " \
-                "AND number in {number_list})SELECT (select * from ss) - uniqExact(search_bar) as value " \
-                "FROM logs.tovs_search " \
-                "WHERE date_add between '{date_1}' and '{date_2}' " \
-                "AND number in {number_list} AND id_element in ('add', 'button')"
-        
-        df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
-        self.df_full = pd.concat([self.df_full, df])
+        print(metric)
+
+        query = """
+            SELECT (trim(lowerUTF8(search_bar))) as value, SUM(if(id_element in ('add', 'button'), 1, 0)) as add_
+            FROM logs.tovs_search
+            WHERE date_add between '{date_1}' and '{date_2}'
+            AND number in {number_list}
+            GROUP BY value;
+        """
+        df = pd.DataFrame()
+        for date_from, date_to in self.days_:
+            self.get_metrics(
+                query=self.replase_querys_general(query, source, date_from, date_to),
+                date_from=date_from,
+                date_to=date_to,
+                name_param=name_param,
+                source=source,
+                type_q=type_q,
+                metric=metric
+            )     
+
+        df = self.merge_data(name_param)
+        df['add_'] = df['add_'].astype('int')
+        df_new = df[self.index + ['value', 'add_']].groupby(self.index + ['value']).sum()
+        df_new = df_new.reset_index()
+        df_new = df_new[df_new['add_'] == 0]
+        df_new.set_index(self.index, inplace=True)
+        df_new = df_new.rename(
+            columns={
+                'value': name_param,
+            }
+        )
+
+        df_new = df_new[name_param].groupby(level=self.index).count()
+        df_new = self.get_zero_values(df_new, name_param, metric, type_q)
+        df_new = df_new.reset_index(level=self.index)
+
+        self.df_full = pd.concat([self.df_full, df_new])
 
     def add_count_search_not_rn(self):
         metric = "Количество выдач 'Ничего не найдено'"
@@ -716,12 +797,14 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
+        print(metric)
+
         query = "SELECT DISTINCT (id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
                 "AND rn_max = 0 " \
-                "AND search_bar != ''"
+                "AND trim(lowerUTF8(search_bar)) != ''"
         
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
         self.df_full = pd.concat([self.df_full, df])
@@ -732,12 +815,14 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
-        query = "SELECT DISTINCT (id_search) as value " \
+        print(metric)
+
+        query = "SELECT DISTINCT (trim(lowerUTF8(search_bar))) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
                 "AND rn_max = 0 " \
-                "AND search_bar != ''"
+                "AND trim(lowerUTF8(search_bar)) != ''"
         
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
         self.df_full = pd.concat([self.df_full, df])
@@ -750,6 +835,8 @@ class Metrics():
         name_param = 'count_search_with_interesting'
         source = "CH"
         type_q = "count"
+
+        print(metric)
 
         query = "SELECT COUNT(id_search) as value " \
                 "FROM logs.tovs_search " \
@@ -766,6 +853,8 @@ class Metrics():
         source = "CH"
         type_q = "avg"
 
+        print(metric)
+
         query = "SELECT position as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
@@ -777,32 +866,54 @@ class Metrics():
         self.df_full = pd.concat([self.df_full, df])
 
     def add_count_add_position_6(self):
-        metric = "Количество добавлений с позицией добавления более 6"
+        metric = "Количество добавлений с позицией добавления 1-6"
         name_param = 'count_add_position_6'
         source = "CH"
         type_q = "count"
+
+        print(metric)
 
         query = "SELECT COUNT(id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND position > 6 " \
+                "AND position <= 6 " \
                 "AND id_element in ('add', 'button')"
 
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
         self.df_full = pd.concat([self.df_full, df])
 
     def add_count_add_position_12(self):
-        metric = "Количество добавлений с позицией добавления более 12"
+        metric = "Количество добавлений с позицией добавления 7-12"
         name_param = 'count_add_position_12'
         source = "CH"
         type_q = "count"
+
+        print(metric)
 
         query = "SELECT COUNT(id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND position > 12 " \
+                "AND position > 6 and position <= 12 " \
+                "AND id_element in ('add', 'button')"
+
+        df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
+        self.df_full = pd.concat([self.df_full, df])
+
+    def add_count_add_position_39(self):
+        metric = "Количество добавлений с позицией добавления 13-40"
+        name_param = 'count_add_position_39'
+        source = "CH"
+        type_q = "count"
+
+        print(metric)
+
+        query = "SELECT COUNT(id_search) as value " \
+                "FROM logs.tovs_search " \
+                "WHERE date_add between '{date_1}' and '{date_2}' " \
+                "AND number in {number_list} " \
+                "AND position > 12 and position <= 40 " \
                 "AND id_element in ('add', 'button')"
 
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
@@ -813,6 +924,8 @@ class Metrics():
         name_param = 'count_add_position_40'
         source = "CH"
         type_q = "count"
+
+        print(metric)
 
         query = "SELECT COUNT(id_search) as value " \
                 "FROM logs.tovs_search " \
@@ -825,12 +938,58 @@ class Metrics():
         self.df_full = pd.concat([self.df_full, df])
 
     def add_count_q_position_6(self):
-        metric = "Количество запросов со средней позицией добавления более 6"
+        metric = "Количество запросов со средней позицией добавления 1-6"
         name_param = 'count_q_position_6'
         source = "CH"
         type_q = "unique"
 
-        query = "SELECT search_bar, position " \
+        print(metric)
+
+        query = "SELECT trim(lowerUTF8(search_bar)) as search_bar, position " \
+                "FROM logs.tovs_search " \
+                "WHERE date_add between '{date_1}' and '{date_2}' " \
+                "AND number in {number_list} " \
+                "AND id_element in ('add', 'button') "
+
+        for date_from, date_to in self.days_:
+            self.get_metrics(
+                query=self.replase_querys_general(query, source, date_from, date_to),
+                date_from=date_from,
+                date_to=date_to,
+                name_param='count_q_position_all',
+                source=source,
+                type_q=type_q,
+                metric=metric
+            )
+
+        df = self.merge_data('count_q_position_all')
+        if not df.empty:
+            df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(0)
+            df_avg = df_avg[df_avg['position'] <= 6]
+            df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
+            df_avg = df_avg.rename(
+                columns={
+                    'search_bar': name_param
+                }
+            )
+            df_avg = df_avg.groupby(self.index).count()
+        
+        df_avg = self.get_zero_values(df_avg, name_param, metric, type_q)
+        df_avg = df_avg.reset_index(level=self.index)
+        df_avg['metric'] = metric
+
+        self.df_full = pd.concat([self.df_full, df_avg])
+
+
+    def add_count_q_position_12(self):
+        metric = "Количество запросов со средней позицией добавления 7-12"
+        name_param = 'count_q_position_12'
+        source = "CH"
+        type_q = "unique"
+
+        print(metric)
+
+        query = "SELECT trim(lowerUTF8(search_bar)) as search_bar, position " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
@@ -849,31 +1008,36 @@ class Metrics():
 
         df = self.merge_data('count_q_position_all')
 
-        df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(2)
-        df_avg = df_avg[df_avg['position'] > 6]
-        df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
-        df_avg = df_avg.rename(
-            columns={
-                'search_bar': name_param
-            }
-        )
-        df_avg = df_avg.groupby(self.index).count()
-        df_avg = df_avg.reset_index(self.index)
+        if not df.empty:
+            df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(0)
+            df_avg = df_avg[(df_avg['position'] > 6) & (df_avg['position'] <= 12)]
+            df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
+            df_avg = df_avg.rename(
+                columns={
+                    'search_bar': name_param
+                }
+            )
+            df_avg = df_avg.groupby(self.index).count()
+
+        df_avg = self.get_zero_values(df_avg, name_param, metric, type_q)
+        df_avg = df_avg.reset_index(level=self.index)
+        df_avg['metric'] = metric
+
         self.df_full = pd.concat([self.df_full, df_avg])
 
-
-    def add_count_q_position_12(self):
-        metric = "Количество запросов со средней позицией добавления более 12"
-        name_param = 'count_q_position_12'
+    def add_count_q_position_39(self):
+        metric = "Количество запросов со средней позицией добавления 13-40"
+        name_param = 'count_q_position_39'
         source = "CH"
         type_q = "unique"
 
-        query = "SELECT COUNT(search_bar) as value " \
+        print(metric)
+
+        query = "SELECT trim(lowerUTF8(search_bar)) as search_bar, position " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND position > 12 " \
-                "AND id_element in ('add', 'button')"
+                "AND id_element in ('add', 'button') "
 
         for date_from, date_to in self.days_:
             self.get_metrics(
@@ -887,17 +1051,22 @@ class Metrics():
             )
 
         df = self.merge_data('count_q_position_all')
+        
+        if not df.empty:
+            df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(0)
+            df_avg = df_avg[(df_avg['position'] > 12) & (df_avg['position'] <= 40)]
+            df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
+            df_avg = df_avg.rename(
+                columns={
+                    'search_bar': name_param
+                }
+            )
+            df_avg = df_avg.groupby(self.index).count()
+        
+        df_avg = self.get_zero_values(df_avg, name_param, metric, type_q)
+        df_avg = df_avg.reset_index(level=self.index)
+        df_avg['metric'] = metric
 
-        df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(2)
-        df_avg = df_avg[df_avg['position'] > 12]
-        df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
-        df_avg = df_avg.rename(
-            columns={
-                'search_bar': name_param
-            }
-        )
-        df_avg = df_avg.groupby(self.index).count()
-        df_avg = df_avg.reset_index(self.index)
         self.df_full = pd.concat([self.df_full, df_avg])
 
 
@@ -907,12 +1076,13 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
-        query = "SELECT COUNT(search_bar) as value " \
+        print(metric)
+
+        query = "SELECT trim(lowerUTF8(search_bar)) as search_bar, position " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND position > 40 " \
-                "AND id_element in ('add', 'button')"
+                "AND id_element in ('add', 'button') "
 
         for date_from, date_to in self.days_:
             self.get_metrics(
@@ -927,46 +1097,73 @@ class Metrics():
 
         df = self.merge_data('count_q_position_all')
 
-        df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(2)
-        df_avg = df_avg[df_avg['position'] > 40]
-        df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
-        df_avg = df_avg.rename(
-            columns={
-                'search_bar': name_param
-            }
-        )
-        df_avg = df_avg.groupby(self.index).count()
-        df_avg = df_avg.reset_index(self.index)
+        if not df.empty:
+            df_avg = df[self.index + ['search_bar','position']].groupby(self.index + ['search_bar']).mean().round(0)
+            df_avg = df_avg[df_avg['position'] > 40]
+            df_avg = df_avg.reset_index(self.index + ['search_bar']).drop(columns='position')
+            df_avg = df_avg.rename(
+                columns={
+                    'search_bar': name_param
+                }
+            )
+            df_avg = df_avg.groupby(self.index).count()
+        
+        df_avg = self.get_zero_values(df_avg, name_param, metric, type_q)
+        df_avg = df_avg.reset_index(level=self.index)
+        df_avg['metric'] = metric
+
         self.df_full = pd.concat([self.df_full, df_avg])
 
 
     def add_unique_search_position_6(self):
-        metric = "Количество уникальных выдач с позицией добавления более 6"
+        metric = "Количество уникальных выдач с позицией добавления 1-6"
         name_param = 'unique_search_position_6'
         source = "CH"
         type_q = "unique"
+
+        print(metric)
 
         query = "SELECT DISTINCT (id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND position > 6 " \
+                "AND position <= 6 " \
                 "AND id_element in ('add', 'button')"
         
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
         self.df_full = pd.concat([self.df_full, df])
 
     def add_unique_search_position_12(self):
-        metric = "Количество уникальных выдач с позицией добавления более 12"
+        metric = "Количество уникальных выдач с позицией добавления 7-12"
         name_param = 'unique_search_position_12'
         source = "CH"
         type_q = "unique"
+
+        print(metric)
 
         query = "SELECT DISTINCT (id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
-                "AND position > 12 " \
+                "AND position > 6 and position <= 12 " \
+                "AND id_element in ('add', 'button')"
+        
+        df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
+        self.df_full = pd.concat([self.df_full, df])
+
+    def add_unique_search_position_39(self):
+        metric = "Количество уникальных выдач с позицией добавления 13-40"
+        name_param = 'unique_search_position_39'
+        source = "CH"
+        type_q = "unique"
+
+        print(metric)
+
+        query = "SELECT DISTINCT (id_search) as value " \
+                "FROM logs.tovs_search " \
+                "WHERE date_add between '{date_1}' and '{date_2}' " \
+                "AND number in {number_list} " \
+                "AND position > 12 and position <= 40 " \
                 "AND id_element in ('add', 'button')"
         
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
@@ -977,6 +1174,8 @@ class Metrics():
         name_param = 'unique_search_position_40'
         source = "CH"
         type_q = "unique"
+
+        print(metric)
 
         query = "SELECT DISTINCT (id_search) as value " \
                 "FROM logs.tovs_search " \
@@ -994,6 +1193,8 @@ class Metrics():
         name_param = 'avg_time_add'
         source = "CH"
         type_q = "avg"
+
+        print(metric)
 
         query = "WITH min_search AS (" \
                 "SELECT min(date_add) as min_d,  id_search as id_search " \
@@ -1023,7 +1224,9 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
-        query = "SELECT number, id_search " \
+        print(metric)
+
+        query = "SELECT concat(number, '_', id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
@@ -1039,7 +1242,9 @@ class Metrics():
         source = "CH"
         type_q = "unique"
 
-        query = "SELECT number, id_search " \
+        print(metric)
+
+        query = "SELECT concat(number, '_', id_search) as value " \
                 "FROM logs.tovs_search " \
                 "WHERE date_add between '{date_1}' and '{date_2}' " \
                 "AND number in {number_list} " \
@@ -1047,4 +1252,209 @@ class Metrics():
                 "GROUP BY number, id_search"
         
         df = self.get_df_full_for_metric(query, metric, name_param, source, type_q)
+
+        if 'unique_session' not in self.df_full.columns:
+            self.add_unique_session()
+
+        self.df_full['unique_session_not_add'] = self.df_full['unique_session'] - self.df_full['unique_session_not_add']
         self.df_full = pd.concat([self.df_full, df])
+
+
+    def add_unique_q_konversia_up(self):
+        metric = "Количество запросов, в которых конверсия в добавление стазначимо выше"
+        name_param = 'unique_q_konversia_up'
+        source = "CH"
+        type_q = "unique"
+
+        print(metric)
+
+        query = """
+            SELECT trim(lowerUTF8(search_bar)) as search_bar, COUNT(1) as value, SUM(if(id_element in ('add', 'button'), 1, 0)) as value_add
+            FROM logs.tovs_search
+            WHERE date_add between '{date_1}' and '{date_2}' 
+            AND number in {number_list} 
+            GROUP BY search_bar
+        """
+        
+        for date_from, date_to in self.days_:
+            self.get_metrics(
+                query=self.replase_querys_general(query, source, date_from, date_to),
+                date_from=date_from,
+                date_to=date_to,
+                name_param='unique_q_konversia_all',
+                source=source,
+                type_q=type_q,
+                metric=metric
+            )
+
+        df = self.merge_data('unique_q_konversia_all')
+
+        df_konv = df[['search_bar', 'value', 'value_add'] + self.index]
+        df_konv.set_index(self.index + ['search_bar'], inplace=True)
+        df_konv = df_konv.fillna(0).astype('int64').groupby(by=self.index + ['search_bar']).sum()
+        df_konv['konv'] = df_konv['value_add']/df_konv['value']
+        df_konv['konv'] = df_konv['konv'].round(2)
+        df_konv = df_konv.drop(columns=['value', 'value_add'])
+
+        return df_konv
+
+
+    def merge_unique_q_konversia_up(self, df_a: pd.DataFrame, df_b: pd.DataFrame, delta, number_list=None):
+        metric = "Количество запросов, в которых конверсия в добавление стазначимо выше"
+        name_param = 'unique_q_konversia_up'
+        source = "CH"
+        type_q = "unique"
+
+        if number_list:
+
+            name_1, name_2 = number_list[0]
+            num_1 = f'{name_1}_{name_2}'
+
+            name_1, name_2 = number_list[1]
+            num_2 = f'{name_1}_{name_2}'
+            
+
+            df_a = df_a.reset_index()
+            df_b = df_b.reset_index()
+
+            df_full = df_a.merge(
+                df_b,
+                how='outer',
+                on=self.index +['search_bar'],
+                suffixes=['', '_A']
+            )
+            df_full['konv_A'] = df_full['konv_A'].fillna(0)
+            df_full['konv'] = df_full['konv'].fillna(0)
+            df_full[name_param] = df_full['konv_A'] - df_full['konv']
+
+            df_full_0 = df_full[df_full[name_param] > delta]
+
+            df_full_1 = df_full[df_full[name_param] < -delta]
+
+            df_full_0 = df_full_0[self.index + [name_param]].drop_duplicates().groupby(self.index).count()
+
+            df_full_1 = df_full_1[self.index + [name_param]].drop_duplicates().groupby(self.index).count()
+
+            df_full_0 = df_full_0.rename(
+                columns={
+                    name_param: num_1
+                }
+            )
+
+            df_full_1 = df_full_1.rename(
+                columns={
+                    name_param: num_2
+                }
+            )
+
+            df_full = pd.concat([df_full_0,df_full_1], axis=1)
+            df_full = self.get_zero_values(df_full, name_param, metric, type_q)
+            df_full = df_full.reset_index(level=self.index)
+            df_full = df_full.drop(columns=[name_param])
+
+        else:
+            pass
+
+        df_full['metric'] = metric
+
+        return df_full
+        
+
+    def add_unique_q_avg_down(self, delta = 20):
+        metric = "Количество запросов в которых средняя позиция добавления статзначимо меньше"
+        name_param = 'unique_q_avg_down'
+        source = "CH"
+        type_q = "unique"
+
+        print(metric)
+
+        query = """
+            SELECT trim(lowerUTF8(search_bar)) as search_bar, COUNT(1) as value, SUM(if(id_element in ('add', 'button'), 1, 0)) as value_add
+            FROM logs.tovs_search
+            WHERE date_add between '{date_1}' and '{date_2}' 
+            AND number in {number_list} 
+            GROUP BY search_bar
+        """
+        
+        for date_from, date_to in self.days_:
+            self.get_metrics(
+                query=self.replase_querys_general(query, source, date_from, date_to),
+                date_from=date_from,
+                date_to=date_to,
+                name_param='unique_q_konversia_all',
+                source=source,
+                type_q=type_q,
+                metric=metric
+            )
+
+        df = self.merge_data('unique_q_konversia_all')  
+
+        df_konv = df[['search_bar', 'value', 'value_add'] + self.index]
+        df_konv.set_index(self.index + ['search_bar'], inplace=True)
+        df_konv = df_konv.fillna(0).astype('int64').groupby(by=self.index + ['search_bar']).mean().round(2)
+        df_konv['konv'] = df_konv['value_add']*100/df_konv['value']
+        df_konv['konv'] = df_konv['konv'].round(2)
+        df_konv = df_konv.drop(columns=['value', 'value_add'])
+
+        return df_konv
+        
+
+
+    def merge_unique_q_avg_down(self, df_a: pd.DataFrame, df_b: pd.DataFrame, delta, number_list=None):
+        metric = "Количество запросов в которых средняя позиция добавления статзначимо меньше"
+        name_param = 'unique_q_avg_down'
+        source = "CH"
+        type_q = "unique"
+
+        if number_list:
+
+            name_1, name_2 = number_list[0]
+            num_1 = f'{name_1}_{name_2}'
+
+            name_1, name_2 = number_list[1]
+            num_2 = f'{name_1}_{name_2}'
+            
+
+            df_a = df_a.reset_index()
+            df_b = df_b.reset_index()
+
+            df_full = df_a.merge(
+                df_b,
+                how='outer',
+                on=self.index +['search_bar'],
+                suffixes=['', '_A']
+            )
+            df_full['konv_A'] = df_full['konv_A'].fillna(0)
+            df_full['konv'] = df_full['konv'].fillna(0)
+            df_full[name_param] = df_full['konv_A'] - df_full['konv']
+
+            df_full_0 = df_full[df_full[name_param] > delta]
+
+            df_full_1 = df_full[df_full[name_param] < -delta]
+
+            df_full_0 = df_full_0[self.index + [name_param]].drop_duplicates().groupby(self.index).count()
+
+            df_full_1 = df_full_1[self.index + [name_param]].drop_duplicates().groupby(self.index).count()
+
+            df_full_0 = df_full_0.rename(
+                columns={
+                    name_param: num_1
+                }
+            )
+
+            df_full_1 = df_full_1.rename(
+                columns={
+                    name_param: num_2
+                }
+            )
+
+            df_full = pd.concat([df_full_0,df_full_1], axis=1)
+            df_full = self.get_zero_values(df_full, name_param, metric, type_q)
+            df_full = df_full.reset_index(level=self.index)
+            df_full = df_full.drop(columns=[name_param])
+            
+
+        df_full['metric'] = metric
+
+
+        return df_full

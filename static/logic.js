@@ -1,5 +1,5 @@
 function cmd(){
-    //var valueAB = document.getElementById("selectAB").value;
+    var valueAB = document.getElementById("selectAB").value;
     var date_from = document.getElementById("date_from").value;
     var date_before = document.getElementById("date_before").value;
     var A_start = document.getElementById("A_start").value;
@@ -9,8 +9,8 @@ function cmd(){
 
     $.ajax({
         type: "POST",
-        url: "http://10.1.241.41:9300/cmd",
-        data: {"idAB": 0, "date_from": date_from, "date_before":date_before,"A_start": A_start, "A_end": A_end, "B_start": B_start, "B_end": B_end},  
+        url: "http://10.1.241.41:9301/cmd",
+        data: {"idAB": valueAB, "date_from": date_from, "date_before":date_before,"A_start": A_start, "A_end": A_end, "B_start": B_start, "B_end": B_end},  
         success: function (data) { 
             var returnedData = JSON.parse(data);
 
@@ -106,7 +106,7 @@ function top_request(){
 
     $.ajax({
         type: "POST",
-        url: "http://10.1.241.41:9300/top_request",
+        url: "http://10.1.241.41:9301/top_request",
         data: {"date_from": date_from, "date_before":date_before, "A_start": A_start, "A_end": A_end, "B_start": B_start, "B_end": B_end},  
         success: function (data) { 
             console.log('0')
@@ -270,7 +270,7 @@ function all_number(){
 
     $.ajax({
         type: "POST",
-        url: "http://10.1.241.41:9300/all_number",
+        url: "http://10.1.241.41:9301/all_number",
         data: {"date_from": date_from, "date_before":date_before},  
         success: function (data) { 
             var returnedData = JSON.parse(data);

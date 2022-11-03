@@ -34,14 +34,3 @@ class MsSQL:
 
         with pyodbc.connect(self.conn_ms) as cnxn:
             return pd.read_sql(query, cnxn)
-
-    def select_to_dict(self, query) -> list:
-        """
-        получение данных в list of dict
-        :return: list
-        """
-
-        self.print_select(query)
-        with pyodbc.connect(self.conn_ms) as cnxn:
-            df = pd.read_sql(query, cnxn)
-            return df.to_dict('records')
